@@ -1,0 +1,24 @@
+{
+  "name": "robdd-js",
+  "version": "0.0.1",
+  "description": "Reduced Ordered Binary Decision Diagrams, for Symbolic Modelchecking",
+  "main": "./lib/BDD.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "BDD",
+    "Binary", "Decision", "Diagram",
+    "Symbolic", "Modelchecking",
+    "Propositional", "Logic"
+  ],
+  "author": "meisl",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meisl/robdd-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/meisl/robdd-js/issues"
+  }
+}
