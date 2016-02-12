@@ -193,9 +193,9 @@ function mkBitStr(prefix, length) {
     return result;
 }
 
-var a1  = mkBitStr('a1_', 2),
-    a2  = mkBitStr('a2_', 2),
-    a3  = mkBitStr('a3_', 2);
+var a1  = mkBitStr('a1_', 3),
+    a2  = mkBitStr('a2_', 3),
+    a3  = mkBitStr('a3_', 3);
 
 function no_overlap(a, b) {
     return a.eqv(b).not();
@@ -203,13 +203,13 @@ function no_overlap(a, b) {
 
 function moves(as) {
     var right     = as.next.eqv(as.plus(1)),
-        can_right = as.eqv([BDD.False, BDD.False]).or(as.eqv([BDD.False, BDD.True]));
+        can_right = as.eqv([BDD.False, BDD.True, BDD.True]).not().and(as.eqv([BDD.True, BDD.True, BDD.True]).not());
     var left      = as.next.plus(1).eqv(as),
-        can_left  = as.eqv([BDD.True,  BDD.False]).or(as.eqv([BDD.True,  BDD.True]));
+        can_left  = as.eqv([BDD.False, BDD.False, BDD.False]).not().and(as.eqv([BDD.True,  BDD.False, BDD.False]).not());
     var down      = as.next.eqv(as.plus(2)),
-        can_down  = bitstr_lt(as, [BDD.False, BDD.True]);
+        can_down  = bitstr_lt(as, [BDD.True, BDD.False, BDD.False]);
     var up        = as.next.plus(2).eqv(as),
-        can_up    = bitstr_lt([BDD.True, BDD.False], as);
+        can_up    = bitstr_lt([BDD.False, BDD.True, BDD.True], as);
     return as.next.eqv(as).not().and(
             right.and(can_right)
         .or(left.and( can_left ))
@@ -252,28 +252,32 @@ function *fromBinary(bits, idx) {
     }
 }
 
-function explicit_LTS(g, vectorVars) {
+function explicit_LTS(g, vectorVars, mkLabel) {
     let label2idx = {},
         i         = 0,
         ttlBits   = 0,
-        mkLabel   = undefined,
+        extract   = {}, // for each vectorVar (alias): a fn that takes a complete valuation and extracts the value of the single vectorVar (alias)
         satPaths  = 0,
         explEdges = 0;
     for (let alias in vectorVars) {
         const vector = vectorVars[alias],
               vecLen = vector.length;
         ttlBits += vecLen;
-        mkLabel = ((mkLabelOld, alias, start, len) =>
-            mkLabelOld
-                ? n => mkLabelOld(n) + '\n' + alias + '=' + ((n >>> start) & ((1 << len) - 1) )
-                : n =>                        alias + '=' + ((n >>> start) & ((1 << len) - 1) )
-        )(mkLabel, alias, i, vecLen);
+
+        extract[alias] = ((start, len) => n => (n >>> start) & ((1 << len) - 1))(i, vecLen);
+
         for (let k = 0; k < vecLen; k++, i++) {
             const label = vector[k].label;
             label2idx[label] = i;
             // the ith in vsflat corresponds to the kth bit in vectorVars[alias]
         }
     }
+    if (mkLabel === undefined) {
+        mkLabel = (n, extract) => Object.keys(extract)
+            .map(alias => alias + '=' + extract[alias](n))
+            .join("\n");
+    }
+
     for (let q of p.satPaths()) {
         satPaths++;
         let primed   = new Array(ttlBits);
@@ -288,9 +292,9 @@ function explicit_LTS(g, vectorVars) {
             }
         }
         for (let from of fromBinary(unprimed)) {
-            g.node(from, { label: mkLabel(from) });
+            g.node(from, { label: mkLabel(from, extract), fontname: "Courier" });
             for (let to of fromBinary(primed)) {
-                g.node(to, { label: mkLabel(to) });
+                g.node(to, { label: mkLabel(to, extract), fontname: "Courier" });
                 g.addPath(from, to);
                 explEdges++;
             }
@@ -302,13 +306,53 @@ function explicit_LTS(g, vectorVars) {
              + '\nexpl. edges:' + explEdges + '\l',
         color: "invis",
     });
+    return {
+        ttlBits:  ttlBits,
+        satPaths: satPaths,
+        explEdges: explEdges,
+    };
 }
 
 //explicit_LTS(g, { a: as });
-explicit_LTS(g, { a1: a1, a2: a2 , a3: a3 });
+var explStats = explicit_LTS(g, { a1: a1, a2: a2 , a3: a3 },
+//    n => "" + n // mkLabel
+    (n, extract) => {
+        var w = 4,
+            h = 2,
+            lines = (new Array(h)).fill("_".repeat(w));
+        Object.keys(extract).forEach(k => {
+            var p = extract[k](n),
+                x = p % w,
+                y = Math.floor(p / w);
+            lines[y] = lines[y].substr(0, x) + k.substr(1) + lines[y].substr(x + 1);
+        });
+        return lines.join('\n');
+    }
+);
+
+var BDDstats = BDD.stats();
+//console.log(BDDstats);
+console.log('insts: ' + BDDstats.instCount + ', get: ' + BDDstats.getCalls + '\nite: ' + util.inspect(BDDstats.iteCalls));
+console.log(explStats);
+
+process.exit();
 
 
+/* without no_overlap:
+insts: 1068, get: 29181
+ite: { terminal: 29386, var: 12850, irrelevantHead: 228, other: 8473 }
+{ ttlBits: 9, satPaths: 2688, explEdges: 2688 }
+*/
+/* with no_overlap:
+insts: 15538, get: 110265
+ite: { terminal: 109510,
+  var: 46152,
+  irrelevantHead: 1248,
+  other: 59227 }
+{ ttlBits: 9, satPaths: 1216, explEdges: 1260 }
+*/
 
+g.label('insts: ' + BDDstats.instCount + ', get: ' + BDDstats.getCalls + '\nite: ' + util.inspect(BDDstats.iteCalls));
 
 //g.node(a.ite(b, c));
 //g.label('(ite a b c)');
@@ -320,11 +364,7 @@ if (!p.isTerminal && !omitFalse) {
    g.addPath(BDD.True, BDD.False).where({style: "invis"});
 }
 
-var stats = BDD.stats();
-g.label('insts: ' + stats.instCount + ', get: ' + stats.getCalls + '\nite: ' + util.inspect(stats.iteCalls));
 g.render();
-
-console.log(stats);
 
 console.log('----');
 
