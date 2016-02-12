@@ -33,7 +33,8 @@ const BDD = require('../lib/BDD'),
 /* BDD.size */
 () => {
     let a = BDD.var('a'),
-        b = BDD.var('b');
+        b = BDD.var('b'),
+        c = BDD.var('c');
     [
         [T                 ,    1],
         [a                 ,    3],
@@ -41,6 +42,7 @@ const BDD = require('../lib/BDD'),
         [ite(a, b, T)      ,    4],
         [ite(a, b, F)      ,    4],
         [ite(a, b, b.not()),    5],
+        [a.xor(b.xor(c)),       7], // var order doesn't matter since xor is commutative and associative
     ].forEach(arr => {
         let bdd  = arr[0];
         let size = arr[1];
