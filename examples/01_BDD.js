@@ -96,7 +96,7 @@ var bs  = bitstr('b', 4),
 
 //p = bs_.eqv(bitstr_plus_(bs, bs));
 //p = bs_.eqv(bitstr_plus_(bs, bs));  // ignores overflow (includes wrap-around)
-p = bs.plus(bs).eqv(bs_);  // excepts overflow (excludes wrap-around)
+p = bs.plus(bs).eq(bs_);  // excepts overflow (excludes wrap-around)
 //p = bs_.lt(bs);
 //p = b1.or(b1_).eqv(b1.and(b1_));
 
@@ -108,19 +108,19 @@ var a1  = bitstr('a1_', bitLen),
     a3  = bitstr('a3_', bitLen);
 
 function no_overlap(a, b) {
-    return a.eqv(b).not();
+    return a.neq(b);
 }
 
 function moves(as) {
-    var right     = as.next.eqv(as.plus(1)),
-        can_right = as.eqv(w - 1).not().and(as.eqv(w + w - 1).not());   // as % w < w - 2
-    var left      = as.next.plus(1).eqv(as),
-        can_left  = as.eqv(0).not().and(as.eqv(w).not());
-    var down      = as.next.eqv(as.plus(2)),
+    var right     = as.next.eq(as.plus(1)),
+        can_right = as.neq(w - 1).and(as.neq(w + w - 1));   // as % w < w - 2
+    var left      = as.next.plus(1).eq(as),
+        can_left  = as.neq(0).and(as.neq(w));
+    var down      = as.next.eq(as.plus(2)),
         can_down  = as.lt((h-1) * w);
-    var up        = as.next.plus(2).eqv(as),
+    var up        = as.next.plus(2).eq(as),
         can_up    = bitstr(w, bitLen).lt(as);
-    return as.next.eqv(as).not().and(
+    return as.next.neq(as).and(
             right.and(can_right)
         .or(left.and( can_left ))
         .or(down.and( can_down ))
@@ -129,9 +129,9 @@ function moves(as) {
 }
 
 
-p =     moves(a1).and(a2.eqv(a2.next)).and(a3.eqv(a3.next))
-    .or(moves(a2).and(a1.eqv(a1.next)).and(a3.eqv(a3.next)))
-    .or(moves(a3).and(a1.eqv(a1.next)).and(a2.eqv(a2.next)))
+p =     moves(a1).and(a2.eq(a2.next)).and(a3.eq(a3.next))
+    .or(moves(a2).and(a1.eq(a1.next)).and(a3.eq(a3.next)))
+    .or(moves(a3).and(a1.eq(a1.next)).and(a2.eq(a2.next)))
     .and(
              no_overlap(a1,      a2     )
         .and(no_overlap(a1,      a3     ))
