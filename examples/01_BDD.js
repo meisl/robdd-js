@@ -100,22 +100,9 @@ p = bs.plus(bs).eqv(bs_);  // excepts overflow (excludes wrap-around)
 //p = bs_.lt(bs);
 //p = b1.or(b1_).eqv(b1.and(b1_));
 
-function filterIterator(it, f) {
-    return function* () {
-        var v = it.next();
-        while (!v.done) {
-            if (f(v.value)) {
-                yield v.value;
-            }
-            v = it.next();
-        }
-        return v;
-    }();
-}
-
-const w = 4,
+const w = 2,
       h = 2,
-      bitLen = 3;
+      bitLen = 2;
 var a1  = bitstr('a1_', bitLen),
     a2  = bitstr('a2_', bitLen),
     a3  = bitstr('a3_', bitLen);
@@ -248,9 +235,7 @@ function explicit_LTS(p, vectorVars, mkLabel) {
 }
 
 function mkLabel2(n, extract) {
-    var w = 4,
-        h = 2,
-        lines = (new Array(h)).fill("_".repeat(w));
+    var lines = (new Array(h)).fill("_".repeat(w));
     Object.keys(extract).forEach(k => {
         var p = extract[k](n),
             x = p % w,
@@ -274,7 +259,7 @@ console.log('instances: ' + BDDstats.instCount
 );
 console.log(explStats);
 
-process.exit();
+//process.exit();
 
 
 /* without no_overlap:
