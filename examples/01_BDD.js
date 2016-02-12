@@ -119,7 +119,8 @@ function moves(as) {
     var down      = as.next.eq(as.plus(2)),
         can_down  = as.lt((h-1) * w);
     var up        = as.next.plus(2).eq(as),
-        can_up    = bitstr(w, bitLen).lt(as);
+        can_up    = bitstr(w, bitLen).lte(as);
+
     return as.next.neq(as).and(
             right.and(can_right)
         .or(left.and( can_left ))
