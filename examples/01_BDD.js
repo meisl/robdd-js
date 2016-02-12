@@ -1,8 +1,9 @@
 "use strict";
 
 const util = require('util');
-const BDD  = require('../lib/BDD');
 const gv   = require('graphviz-js');
+const BDD    = require('../lib/BDD'),
+      bitstr = require('../lib/BDD-bitstr').bitstr;
 
 
 var a = BDD.var('a');
@@ -89,50 +90,6 @@ p = b0.xor(b0_)
 ;
 
 // b' = b + k  encoded as a BDD:
-function bitstr_eqv(bs, cs) {
-    var result = BDD.True,
-        bitLen = bs.length;
-    if (bitLen !== cs.length) {
-        throw new TypeError("bitstrs must have same length - got " + bitLen + " !== " + cs.length);
-    }
-    for (let i = 0; i < bitLen; i++) {
-        result = result.and(bs[i].eqv(cs[i]));
-    }
-    return result;
-}
-
-function bitstr_plus(bs, k) {
-    var bitLen = bs.length,
-        sum    = new Array(bitLen),
-        carry  = BDD.False;
-    for (let i = 0, phi; i < bitLen; i++, k >>>= 1) {
-        if (k & 1) {
-            sum[i] = carry.eqv(bs[i]);
-            carry = carry.or(bs[i]);
-        } else {
-            sum[i] = carry.xor(bs[i]);
-            carry = carry.and(bs[i]);
-        }
-    }
-    sum.eqv  = function (xs) { return carry.not().and(bitstr_eqv(this, xs)) };
-    sum.plus = function (k)  { return bitstr_plus(this, k) };
-    return sum;
-}
-
-function bitstr_plus_(as, bs) {
-    var bitLen = as.length,
-        sum    = new Array(bitLen),
-        carry  = BDD.False;
-    for (let i = 0, a, b; i < bitLen; i++) {
-        a = as[i];
-        b = bs[i];
-        sum[i] = carry.xor(a).xor(b);           // sum[i]    = 1  <=>  nr of 1s in {as[i], bs[i], carry} is odd
-        carry = carry.ite(a.or(b), a.and(b));   // carry-out = 1  <=>  nr of 1s in {as[i], bs[i], carry} is two or three
-    }
-    sum.eqv  = function (xs) { return carry.not().and(bitstr_eqv(this, xs)) };
-    sum.plus = function (k)  { return bitstr_plus(this, k) };
-    return sum;
-}
 
 function bitstr_lt(as, bs) {
     let acc = BDD.False,
@@ -146,19 +103,15 @@ function bitstr_lt(as, bs) {
     return acc;
 }
 
-var bs  = [b0, b1, b2, b3],
-    bs_ = [b0_, b1_, b2_, b3_];
-bs.eqv   = function (xs) { return bitstr_eqv(this, xs) };
-bs.plus  = function (k)  { return bitstr_plus(this, k) };
+var bs  = bitstr('b', 4),
+    bs_ = bs.next;
 bs.lt    = function (xs) { return bitstr_lt(this, xs)  };
-bs_.eqv  = function (xs) { return bitstr_eqv(this, xs) };
-bs_.plus = function (k)  { return bitstr_plus(this, k) };
 bs_.lt   = function (xs) { return bitstr_lt(this, xs)  };
 
 
 //p = bs_.eqv(bitstr_plus_(bs, bs));
 //p = bs_.eqv(bitstr_plus_(bs, bs));  // ignores overflow (includes wrap-around)
-p = bitstr_plus_(bs, bs).eqv(bs_);  // excepts overflow (excludes wrap-around)
+p = bs.plus(bs).eqv(bs_);  // excepts overflow (excludes wrap-around)
 //p = bs_.lt(bs);
 //p = b1.or(b1_).eqv(b1.and(b1_));
 
@@ -175,27 +128,10 @@ function filterIterator(it, f) {
     }();
 }
 
-function mkBitStr(prefix, length) {
-    const result = [],
-          next   = [];
-    for (let i = 0; i < length; i++) {
-        let label = prefix + i;
-        result.push(BDD.var(label      ));
-        next.push(  BDD.var(label + "'"));
-    }
-    result.eqv  = function (xs) { return bitstr_eqv(this, xs) };
-    result.plus = function (k)  { return bitstr_plus(this, k) };
-    next.eqv    = function (xs) { return bitstr_eqv(this, xs) };
-    next.plus   = function (k)  { return bitstr_plus(this, k) };
 
-    result.next = next;
-    next.before = result;
-    return result;
-}
-
-var a1  = mkBitStr('a1_', 3),
-    a2  = mkBitStr('a2_', 3),
-    a3  = mkBitStr('a3_', 3);
+var a1  = bitstr('a1_', 3),
+    a2  = bitstr('a2_', 3),
+    a3  = bitstr('a3_', 3);
 
 function no_overlap(a, b) {
     return a.eqv(b).not();
