@@ -89,25 +89,10 @@ p = b0.xor(b0_)
 */
 ;
 
-// b' = b + k  encoded as a BDD:
 
-function bitstr_lt(as, bs) {
-    let acc = BDD.False,
-        n = as.length;
-    if (bs.length !== n) {
-        throw new TypeError("cannot compare bitstrs of different lengths");
-    }
-    for (let i = 0; i < n; i++) {
-        acc = as[i].xor(bs[i]).ite(bs[i], acc);
-    }
-    return acc;
-}
 
 var bs  = bitstr('b', 4),
     bs_ = bs.next;
-bs.lt    = function (xs) { return bitstr_lt(this, xs)  };
-bs_.lt   = function (xs) { return bitstr_lt(this, xs)  };
-
 
 //p = bs_.eqv(bitstr_plus_(bs, bs));
 //p = bs_.eqv(bitstr_plus_(bs, bs));  // ignores overflow (includes wrap-around)
@@ -128,10 +113,12 @@ function filterIterator(it, f) {
     }();
 }
 
-
-var a1  = bitstr('a1_', 3),
-    a2  = bitstr('a2_', 3),
-    a3  = bitstr('a3_', 3);
+const w = 4,
+      h = 2,
+      bitLen = 3;
+var a1  = bitstr('a1_', bitLen),
+    a2  = bitstr('a2_', bitLen),
+    a3  = bitstr('a3_', bitLen);
 
 function no_overlap(a, b) {
     return a.eqv(b).not();
@@ -139,13 +126,13 @@ function no_overlap(a, b) {
 
 function moves(as) {
     var right     = as.next.eqv(as.plus(1)),
-        can_right = as.eqv([BDD.False, BDD.True, BDD.True]).not().and(as.eqv([BDD.True, BDD.True, BDD.True]).not());
+        can_right = as.eqv(w - 1).not().and(as.eqv(w + w - 1).not());   // as % w < w - 2
     var left      = as.next.plus(1).eqv(as),
-        can_left  = as.eqv([BDD.False, BDD.False, BDD.False]).not().and(as.eqv([BDD.True,  BDD.False, BDD.False]).not());
+        can_left  = as.eqv(0).not().and(as.eqv(w).not());
     var down      = as.next.eqv(as.plus(2)),
-        can_down  = bitstr_lt(as, [BDD.True, BDD.False, BDD.False]);
+        can_down  = as.lt((h-1) * w);
     var up        = as.next.plus(2).eqv(as),
-        can_up    = bitstr_lt([BDD.False, BDD.True, BDD.True], as);
+        can_up    = bitstr(w, bitLen).lt(as);
     return as.next.eqv(as).not().and(
             right.and(can_right)
         .or(left.and( can_left ))

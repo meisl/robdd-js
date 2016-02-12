@@ -18,25 +18,9 @@ const BDD = require('../lib/BDD-bitstr'),
     }
 }();
 
-/* fn bitstr */
-() => {
-    let prefix = 'a',
-        bits   = bitstr(prefix, 4);
+/* fn bitstr *****************************************************************/
 
-    assert.typeof(bits[0], "object");
-
-    assert.same(bits.length, 4, "bitstr called with a str prefix; .length");
-    let i = 0;
-    bits.forEach(v => {
-        assert(v.isVar, "bitstr called with a str prefix yields a vector of variables; " + i + "th: " + v);
-        assert.same(v.label, prefix + i);
-        i++;
-    })
-    assert.same(i, bits.length, "'forEach-ing' through bitStr yields .length formulas");
-
-    // bitstr.eqv itself
-    assert.same(bits.eqv(bits), T, "bitstr called with a str prefix; .eqv(itself)");
-}();
+/* bitstr from int constant */
 
 () => {
     function assertBits(bits, k) {
@@ -84,5 +68,49 @@ const BDD = require('../lib/BDD-bitstr'),
         assertBits(bits.plus(2), k + 2);
         assertBits(bits.plus(3), k + 3);
         // TODO: overflow...?
+
+        // bitstr.lt int constant
+        assert.same(bits.lt(bits),               F, ".lt(itself)");
+        for (let i = 0; i < k; i++) {
+            assert.same(bitstr(i, len).lt(bits), T, "k=" + k + "; [" + bitstr(i, len) + "] < [" + bits + "]");
+            assert.same(bits.lt(bitstr(i, len)), F, "k=" + k + "; [" + bits + "] < [" + bitstr(i, len) + "]");
+        }
+        assert.same(bits.lt(bitstr(k,     len)), F, ".lt(same args)");
+        for (let i = k + 1; i < (1 << len); i++) {
+            assert.same(bits.lt(bitstr(i, len)), T, "k=" + k + "; [" + bits + "] < [" + bitstr(i, len) + "]");
+            assert.same(bitstr(i, len).lt(bits), F, "k=" + k + "; [" + bitstr(i, len) + "] < [" + bits + "]");
+        }
+
+        // bitstr.lte int constant
+        assert.same(bits.lte(bits),               T, ".lte(itself)");
+        for (let i = 0; i < k; i++) {
+            assert.same(bitstr(i, len).lte(bits), T, "k=" + k + "; [" + bitstr(i, len) + "] <= [" + bits + "]");
+            assert.same(bits.lte(bitstr(i, len)), F, "k=" + k + "; [" + bits + "] <= [" + bitstr(i, len) + "]");
+        }
+        assert.same(bits.lte(bitstr(k,     len)), T, ".lte(same args)");
+        for (let i = k + 1; i < (1 << len); i++) {
+            assert.same(bits.lte(bitstr(i, len)), T, "k=" + k + "; [" + bits + "] <= [" + bitstr(i, len) + "]");
+            assert.same(bitstr(i, len).lte(bits), F, "k=" + k + "; [" + bitstr(i, len) + "] <= [" + bits + "]");
+        }
     });
+}();
+
+/* bitstr with str prefix */
+() => {
+    let prefix = 'a',
+        bits   = bitstr(prefix, 4);
+
+    assert.typeof(bits[0], "object");
+
+    assert.same(bits.length, 4, "bitstr called with a str prefix; .length");
+    let i = 0;
+    bits.forEach(v => {
+        assert(v.isVar, "bitstr called with a str prefix yields a vector of variables; " + i + "th: " + v);
+        assert.same(v.label, prefix + i);
+        i++;
+    })
+    assert.same(i, bits.length, "'forEach-ing' through bitStr yields .length formulas");
+
+    // bitstr.eqv itself
+    assert.same(bits.eqv(bits), T, "bitstr called with a str prefix; .eqv(itself)");
 }();
