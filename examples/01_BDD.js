@@ -258,7 +258,8 @@ function explicit_LTS(g, vectorVars, mkLabel) {
         ttlBits   = 0,
         extract   = {}, // for each vectorVar (alias): a fn that takes a complete valuation and extracts the value of the single vectorVar (alias)
         satPaths  = 0,
-        explEdges = 0;
+        explEdges = 0,
+        explNodes = new Set();
     for (let alias in vectorVars) {
         const vector = vectorVars[alias],
               vecLen = vector.length;
@@ -292,9 +293,15 @@ function explicit_LTS(g, vectorVars, mkLabel) {
             }
         }
         for (let from of fromBinary(unprimed)) {
-            g.node(from, { label: mkLabel(from, extract), fontname: "Courier" });
+            if (!explNodes.has(from)) {
+                explNodes.add(from);
+                g.node(from, { label: mkLabel(from, extract), fontname: "Courier" });
+            }
             for (let to of fromBinary(primed)) {
-                g.node(to, { label: mkLabel(to, extract), fontname: "Courier" });
+                if (!explNodes.has(to)) {
+                    explNodes.add(to);
+                    g.node(to, { label: mkLabel(to, extract), fontname: "Courier" });
+                }
                 g.addPath(from, to);
                 explEdges++;
             }
@@ -303,13 +310,15 @@ function explicit_LTS(g, vectorVars, mkLabel) {
     g.node("explStats", {
         label: "ttlBits: " + ttlBits + ' (expl. states <= ' + (1 << ttlBits) + ')\l'
              + "\nsatPaths: " + satPaths + '\l'
-             + '\nexpl. edges:' + explEdges + '\l',
+             + '\nexpl. edges:' + explEdges + '\l'
+             + '\nexpl. nodes:' + explNodes.size + '\l',
         color: "invis",
     });
     return {
         ttlBits:  ttlBits,
         satPaths: satPaths,
         explEdges: explEdges,
+        explNodes: explNodes.size,
     };
 }
 
@@ -333,6 +342,7 @@ var explStats = explicit_LTS(g, { a1: a1, a2: a2 , a3: a3 },
 var BDDstats = BDD.stats();
 //console.log(BDDstats);
 console.log('insts: ' + BDDstats.instCount + ', get: ' + BDDstats.getCalls + '\nite: ' + util.inspect(BDDstats.iteCalls));
+console.log('size of transition rel.: ' + p.size());
 console.log(explStats);
 
 process.exit();

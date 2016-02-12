@@ -30,3 +30,21 @@ const BDD = require('../lib/BDD'),
     assert.same(T.not(), F);
 }();
 
+/* BDD.size */
+() => {
+    let a = BDD.var('a'),
+        b = BDD.var('b');
+    [
+        [T                 ,    1],
+        [a                 ,    3],
+        [b                 ,    3],
+        [ite(a, b, T)      ,    4],
+        [ite(a, b, F)      ,    4],
+        [ite(a, b, b.not()),    5],
+    ].forEach(arr => {
+        let bdd  = arr[0];
+        let size = arr[1];
+        assert.same(bdd      .size(), size);
+        assert.same(bdd.not().size(), size);
+    });
+}();
