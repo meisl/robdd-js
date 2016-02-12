@@ -339,10 +339,14 @@ var explStats = explicit_LTS(g, { a1: a1, a2: a2 , a3: a3 },
     }
 );
 
+console.log('size of transition rel.: ' + p.size);
 var BDDstats = BDD.stats();
 //console.log(BDDstats);
-console.log('insts: ' + BDDstats.instCount + ', get: ' + BDDstats.getCalls + '\nite: ' + util.inspect(BDDstats.iteCalls));
-console.log('size of transition rel.: ' + p.size());
+console.log('instances: ' + BDDstats.instCount
+        + '\n getCalls: ' + BDDstats.getCalls
+        + '\nsizeCalls: ' + BDDstats.sizeCalls
+        + '\n iteCalls: ' + util.inspect(BDDstats.iteCalls)
+);
 console.log(explStats);
 
 process.exit();

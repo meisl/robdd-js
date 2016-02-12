@@ -44,7 +44,7 @@ const BDD = require('../lib/BDD'),
     ].forEach(arr => {
         let bdd  = arr[0];
         let size = arr[1];
-        assert.same(bdd      .size(), size);
-        assert.same(bdd.not().size(), size);
+        assert.same(bdd      .size, size);
+        assert.same(bdd.not().size, size);
     });
 }();
