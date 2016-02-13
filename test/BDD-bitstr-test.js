@@ -21,7 +21,6 @@ const BDD = require('../lib/BDD-bitstr'),
 /* fn bitstr *****************************************************************/
 
 /* bitstr from int constant */
-
 () => {
     function assertBits(bits, k) {
         let i = 0;
@@ -76,43 +75,70 @@ const BDD = require('../lib/BDD-bitstr'),
         // TODO: overflow...?
 
         // bitstr.lt int constant
-        assert.same(bits.lt(bits),               F, ".lt(itself)");
+        assert.same(bits.lt (bits), F, ".lt(itself)");
+        assert.same(bits.lte(bits), T, ".lte(itself)");
+        assert.same(bits.gt (bits), F, ".gt(itself)");
+        assert.same(bits.gte(bits), T, ".gte(itself)");
         for (let i = 0; i < (1 << len); i++) {
+            let bits1 = bits,
+                bits2 = bitstr(i, len);
             if (i < k) {
-                assert.same(bitstr(i, len).lt(bits), T, "k=" + k + "; [" + bitstr(i, len) + "] < [" + bits + "]");
-                assert.same(bits.lt(bitstr(i, len)), F, "k=" + k + "; [" + bits + "] < [" + bitstr(i, len) + "]");
+                // eq
+                assert.same(bits1.eq (bits2), F, "k=" + k + "; [" + bits1 + "] == ["  + bits2 + "]");
+                // neq
+                assert.same(bits1.neq(bits2), T, "k=" + k + "; [" + bits1 + "] != ["  + bits2 + "]");
+                // lt
+                assert.same(bits1.lt (bits2), F, "k=" + k + "; [" + bits1 + "] < ["  + bits2 + "]");
+                assert.same(bits2.lt (bits1), T, "k=" + k + "; [" + bits2 + "] < ["  + bits1 + "]");
+                // lte:
+                assert.same(bits1.lte(bits2), F, "k=" + k + "; [" + bits1 + "] <= [" + bits2 + "]");
+                assert.same(bits2.lte(bits1), T, "k=" + k + "; [" + bits2 + "] <= [" + bits1 + "]");
+                // gt
+                assert.same(bits1.gt (bits2), T, "k=" + k + "; [" + bits1 + "] > ["  + bits2 + "]");
+                assert.same(bits2.gt (bits1), F, "k=" + k + "; [" + bits2 + "] > ["  + bits1 + "]");
             } else if (i === k) {
-                assert.same(bits.lt(bitstr(k,     len)), F, ".lt(same args)");
-            } else { // i > k
-                assert.same(bits.lt(bitstr(i, len)), T, "k=" + k + "; [" + bits + "] < [" + bitstr(i, len) + "]");
-                assert.same(bitstr(i, len).lt(bits), F, "k=" + k + "; [" + bitstr(i, len) + "] < [" + bits + "]");
+                // eq
+                assert.same(bits1.eq (bits2), T, ".eq(same args)");
+                // neq:
+                assert.same(bits1.neq(bits2), F, ".neq(same args)");
+                // lt
+                assert.same(bits1.lt (bits2), F, ".lt(same args)");
+                // lte:
+                assert.same(bits1.lte(bits2), T, ".lte(same args)");
+                // gt
+                assert.same(bits1.gt (bits2), F, ".gt(same args)");
+                // gte:
+                assert.same(bits1.gte(bits2), T, ".gte(same args)");
+            } else { // i > k  ~>  bits1 < bits2
+                // eq
+                assert.same(bits1.eq (bits2), F, "k=" + k + "; [" + bits1 + "] == ["  + bits2 + "]");
+                // neq
+                assert.same(bits1.neq(bits2), T, "k=" + k + "; [" + bits1 + "] != ["  + bits2 + "]");
+                // lt
+                assert.same(bits1.lt (bits2), T, "k=" + k + "; [" + bits1 + "] < ["  + bits2 + "]");
+                assert.same(bits2.lt (bits1), F, "k=" + k + "; [" + bits2 + "] < ["  + bits1 + "]");
+                // lte:
+                assert.same(bits1.lte(bits2), T, "k=" + k + "; [" + bits1 + "] <= [" + bits2 + "]");
+                assert.same(bits2.lte(bits1), F, "k=" + k + "; [" + bits2 + "] <= [" + bits1 + "]");
+                // gt
+                assert.same(bits1.gt (bits2), F, "k=" + k + "; [" + bits1 + "] > ["  + bits2 + "]");
+                assert.same(bits2.gt (bits1), T, "k=" + k + "; [" + bits2 + "] < ["  + bits1 + "]");
+                // gte:
+                assert.same(bits1.gte(bits2), F, "k=" + k + "; [" + bits1 + "] >= [" + bits2 + "]");
+                assert.same(bits2.gte(bits1), T, "k=" + k + "; [" + bits2 + "] >= [" + bits1 + "]");
             }
         }
 
-        // bitstr.lte int constant
-        assert.same(bits.lte(bits),               T, ".lte(itself)");
-        for (let i = 0; i < (1 << len); i++) {
-            if (i < k) {
-                assert.same(bitstr(i, len).lte(bits), T, "k=" + k + "; [" + bitstr(i, len) + "] <= [" + bits + "]");
-                assert.same(bits.lte(bitstr(i, len)), F, "k=" + k + "; [" + bits + "] <= [" + bitstr(i, len) + "]");
-            } else if (i === k) {
-                assert.same(bits.lte(bitstr(k,     len)), T, ".lte(same args)");
-            } else { // i > k
-                assert.same(bits.lte(bitstr(i, len)), T, "k=" + k + "; [" + bits + "] <= [" + bitstr(i, len) + "]");
-                assert.same(bitstr(i, len).lte(bits), F, "k=" + k + "; [" + bitstr(i, len) + "] <= [" + bits + "]");
-            }
-        }
-
-        // lte <=> lt OR eq
         for (let i = 0; i < (1 << len); i++) {
             let bits2 = bitstr(i, len);
-            assert.same(bits.lte(bits2), bits.lt(bits2).or(bits.eq(bits2)), "lte <=> lt OR eq; k=" + k );
-        }
-
-        // lt <=> lte AND neq
-        for (let i = 0; i < (1 << len); i++) {
-            let bits2 = bitstr(i, len);
-            assert.same(bits.lt(bits2), bits.lt(bits2).and(bits.neq(bits2)), "lt <=> lte AND neq; k=" + k );
+            // lt <=> lte AND neq
+            assert.same(bits.lt( bits2), bits.lte(bits2).and(bits.neq(bits2)), "lt <=> lte AND neq; k=" + k );
+            // lte <=> lt OR eq
+            assert.same(bits.lte(bits2), bits.lt( bits2).or( bits.eq( bits2)), "lte <=> lt OR eq; k=" + k );
+            // gt <=> gte AND neq
+            assert.same(bits.gt( bits2), bits.gte(bits2).and(bits.neq(bits2)), "glt <=> lte AND neq; k=" + k );
+            // gte <=> gt OR eq
+            assert.same(bits.gte(bits2), bits.gt( bits2).or( bits.eq( bits2)), "gte <=> lt OR eq; k=" + k );
         }
 
     });
@@ -134,9 +160,32 @@ const BDD = require('../lib/BDD-bitstr'),
     })
     assert.same(i, bits.length, "'forEach-ing' through bitStr yields .length formulas");
 
-    // bitstr.eq itself
-    assert.same(bits.eq(bits),  T, "bitstr called with a str prefix; .eq(itself)");
-
-    // bitstr.neq itself
+    // bitstr.eq/neq itself
+    assert.same(bits.eq( bits), T, "bitstr called with a str prefix; .eq(itself)");
     assert.same(bits.neq(bits), F, "bitstr called with a str prefix; .neq(itself)");
+}();
+
+/* bitstr from BDDs */
+() => {
+    const as1 = bitstr('a', 4),
+          as2 = bitstr(as1[0], as1[1], as1[2], as1[3]),
+          asR = bitstr(as1[3], as1[2], as1[1], as1[0]);
+    assert.same(as1.eq( as2), T, "bitstr with same vars in same order are eq = T (1)");
+    assert.same(as2.eq( as1), T, "bitstr with same vars in same order are eq = T (2)");
+    assert.same(as1.neq(as2), F, "bitstr with same vars in same order are neq = F (1)");
+    assert.same(as2.neq(as1), F, "bitstr with same vars in same order are neq = F (1)");
+
+    let as1EQasR = as1[0].eqv(asR[0])
+              .and(as1[1].eqv(asR[1]))
+              .and(as1[2].eqv(asR[2]))
+              .and(as1[3].eqv(asR[3]))
+    ;
+    assert.same(as1.eq(asR), as1EQasR, "bitstr with same vars but in different order / eq");
+
+    let as1NEQasR = as1[0].xor(asR[0])
+                .or(as1[1].xor(asR[1]))
+                .or(as1[2].xor(asR[2]))
+                .or(as1[3].xor(asR[3]))
+    ;
+    assert.same(as1.eq(asR), as1EQasR, "bitstr with same vars but in different order / eq");
 }();
