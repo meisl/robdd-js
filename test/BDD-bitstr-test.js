@@ -300,3 +300,22 @@ const BitStr = require('../lib/BDD-bitstr'),
     });
 }();
 
+
+/* bitstr.neq */
+() => {
+    const as = bitstr('a', 4),
+          bs = bitstr('b', 4),
+          ks = bitstr(11,  4);
+
+    assert.throws(() => { as.neq("fooo") }, "as.neq expects a number or a bitstr as arg");
+    assert.throws(() => { as.neq(bitstr('a', as.length + 1)) }, "as.neq(bs) expects same .length of as and bs");
+
+    refute.throws(() => { as.neq(12) }, "as.neq accepts a number as arg");
+
+    [as, bs, ks].forEach(left => {
+        [as, bs, ks].forEach(right => {
+            assert.same(left.neq(right), left.eq(right).not(), "a.neq(b)  is equivalent to  not(a.eq(b))");
+        });
+    });
+}();
+
