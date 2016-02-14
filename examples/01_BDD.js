@@ -179,14 +179,10 @@ var a1_plus_a2 = a1.plus(a2);
 
 console.log(BDD.stats());
 console.log('-----');
-console.log(BDD.stat(() => {
-    p = a1_plus_a2.neq(a3);
-}));
-
-console.log(BDD.stat(() => {
-    p = a1_plus_a2.neq2(a3);
-}));
-
+console.log(BDD.statCompare(
+    () => p = a1_plus_a2.neq( a3),
+    () => p = a1_plus_a2.neq2(a3)
+));
 
 process.exit();
 g.node(p);
