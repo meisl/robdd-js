@@ -30,6 +30,22 @@ const BDD = require('../lib/BDD'),
     assert.same(T.not(), F);
 }();
 
+
+() => {
+    [   "ite",
+        "not",
+        "and",
+        "or",
+        "eqv",
+        "xor",
+        "imp",
+        "nand",
+        "nor",
+    ].forEach(fname => {
+        assert.typeof(BDD[fname], "function", "BDD provides a ." + fname + " function");
+    });
+}();
+
 /* BDD.size */
 () => {
     let a = BDD.var('a'),
