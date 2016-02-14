@@ -4,12 +4,22 @@ const pa     = require('pimped-assert'),
       assert = pa.assert,
       refute = pa.refute;
 
-/* module under test: */
-const BDD = require('../lib/BDD-bitstr'),
+const BDD = require('../lib/BDD'),
       T      = BDD.True,
       F      = BDD.False,
       ite    = BDD.ite,
-      bitstr = BDD.bitstr;
+      not    = BDD.not,
+      and    = BDD.and,
+      or     = BDD.or,
+      eqv    = BDD.eqv,
+      xor    = BDD.xor,
+      imp    = BDD.imp
+;
+
+/* module under test: */
+const BitStr = require('../lib/BDD-bitstr'),
+      bitstr = BitStr.bitstr
+;
 
 () => {
     let origBDD = require('../lib/BDD');
@@ -189,3 +199,104 @@ const BDD = require('../lib/BDD-bitstr'),
     ;
     assert.same(as1.eq(asR), as1EQasR, "bitstr with same vars but in different order / eq");
 }();
+
+
+/* bitstr.zip */
+() => {
+    const as = bitstr('a', 4),
+          bs = bitstr('b', 4),
+          cs = as.zip(bs);
+
+    assert.throws(() => { as.zip(bitstr('b', as.length + 1)) }, "as.zip(bs) expects same .length of as and bs");
+    refute.throws(() => { as.zip(12) }, "as.zip accepts a number as arg");
+
+    assert.typeof(cs.map,    "function", "as.zip(bs) provides a .map function");
+
+    let calls = [],
+        xs    = cs.map(function (a, b) { calls.push({ thisArg: this, args: arguments, return: a }); return a; });
+    assert.same(calls.length, as.length, ".map called the provided function .length times");
+    assert(xs.length, as.length, ".map returned a bitstr of the same length");
+    calls.forEach( (call, i) => {
+        assert.same(call.args[0], as[i], "as.zip(bs).map called the fn with 1st arg from as");
+        assert.same(call.args[1], bs[i], "as.zip(bs).map called the fn with 2nd arg from bs");
+    });
+
+}();
+
+
+/* bitstr.reduce without initial value */
+() => {
+    const as = bitstr('a', 4);
+
+    let calls = [],
+        x     = as.reduce(
+                    function (acc, b) {
+                        const result = "returned at " + calls.length + "th call";
+                        calls.push({ thisArg: this, args: arguments, return: result });
+                        return result;
+                    }
+                )
+    ;
+
+    assert.same(calls.length, as.length - 1, ".reduce w/out initial value called the provided function .length-1 times");
+
+    assert.same(calls[0].args[0], as[0], ".reduce w/out initial value called the provided function with 0th elem as 1st arg on first call");
+    calls.forEach((call, i) => {
+        if (i > 0) {
+            assert.same(call.args[0], calls[i - 1].return, ".reduce w/out initial value called the provided function with last returned value as 1st arg on " + i + "th call");
+        }
+        assert.same(call.args[1], as[i + 1], ".reduce w/out initial value called the provided function with (i + 1)th elem as 2nd arg");
+    });
+    assert.same(x, calls[calls.length - 1].return, ".reduce w/out initial value returned last returned value");
+}();
+
+/* bitstr.reduce with initial value */
+() => {
+    const as = bitstr('a', 4);
+
+    assert.throws(() => { as.reduce() }, ".reduce expects a function as 1st arg");
+
+    let calls = [],
+        init  = { value: "initial" },
+        x     = as.reduce(
+                    function (acc, b) {
+                        const result = "returned at " + calls.length + "th call";
+                        calls.push({ thisArg: this, args: arguments, return: result });
+                        return result;
+                    },
+                    init
+                )
+    ;
+
+    assert.same(calls.length, as.length, ".reduce with initial value called the provided function .length times");
+
+    assert.same(calls[0].args[0], init, ".reduce with initial value called the provided function with given initial value as 1st arg on first call");
+    calls.forEach((call, i) => {
+        if (i > 0) {
+            assert.same(call.args[0], calls[i - 1].return, ".reduce with initial value called the provided function with last returned value as 1st arg on " + i + "th call");
+        }
+        assert.same(call.args[1], as[i], ".reduce with initial value called the provided function with ith elem as 2nd arg");
+    });
+    assert.same(x, calls[calls.length - 1].return, ".reduce with initial value returned last returned value");
+
+}();
+
+
+/* bitstr.eq */
+() => {
+    const as = bitstr('a', 4),
+          bs = bitstr('b', 4),
+          ks = bitstr(11,  4);
+
+    assert.throws(() => { as.eq("fooo") }, "as.eq expects a number or a bitstr as arg");
+    assert.throws(() => { as.eq(bitstr('a', as.length + 1)) }, "as.eq(bs) expects same .length of as and bs");
+
+    refute.throws(() => { as.eq(12) }, "as.eq accepts a number as arg");
+
+    [as, bs, ks].forEach(left => {
+        [as, bs, ks].forEach(right => {
+            assert.same(left.eq(right), left.zip(right).map(eqv).reduce(and), "a.eq(b)  is equivalent to  and( a0 eqv b0, a1 eqv b1, ... )");
+        });
+    });
+}();
+

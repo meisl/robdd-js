@@ -175,16 +175,17 @@ function plusB(as, bs) {
 
 
 
-var BDDstats_old;
+var a1_plus_a2 = a1.plus(a2);
 
-BDDstats_old = BDD.stats();
-p = plusA(a1, a2);
-console.log(BDD.stats().diff(BDDstats_old));
+console.log(BDD.stats());
+console.log('-----');
+console.log(BDD.stat(() => {
+    p = a1_plus_a2.eq(a3);
+}));
 
-BDDstats_old = BDD.stats();
-p = plusB(a1, a2);
-console.log(BDD.stats().diff(BDDstats_old));
-
+console.log(BDD.stat(() => {
+    p = a1_plus_a2.eq2(a3);
+}));
 
 
 process.exit();
