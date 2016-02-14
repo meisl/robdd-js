@@ -102,7 +102,7 @@ p = bs.plus(bs).eq(bs_);  // excepts overflow (excludes wrap-around)
 
 const w = 2,
       h = 2,
-      bitLen = 2;
+      bitLen = 4;
 var a1  = bitstr('a1_', bitLen),
     a2  = bitstr('a2_', bitLen),
     a3  = bitstr('a3_', bitLen);
@@ -130,19 +130,64 @@ function moves(as) {
 }
 
 
-p =     moves(a1).and(a2.eq(a2.next)).and(a3.eq(a3.next))
-    .or(moves(a2).and(a1.eq(a1.next)).and(a3.eq(a3.next)))
-    .or(moves(a3).and(a1.eq(a1.next)).and(a2.eq(a2.next)))
+p =     moves(a1).and(a2.eq(a2.next))       //.and(a3.eq(a3.next))      //
+    .or(moves(a2).and(a1.eq(a1.next))   )   //.and(a3.eq(a3.next)))     //
+    //.or(moves(a3).and(a1.eq(a1.next)).and(a2.eq(a2.next)))
     .and(
              no_overlap(a1,      a2     )
-        .and(no_overlap(a1,      a3     ))
-        .and(no_overlap(a2,      a3     ))
         .and(no_overlap(a1.next, a2.next))
-        .and(no_overlap(a1.next, a3.next))
-        .and(no_overlap(a3.next, a2.next))
+        //.and(no_overlap(a1,      a3     ))
+        //.and(no_overlap(a2,      a3     ))
+        //.and(no_overlap(a1.next, a3.next))
+        //.and(no_overlap(a3.next, a2.next))
     )
 ;
 
+
+function plusA(as, bs) {
+    var bitLen = bs.length,
+        sum    = new Array(bitLen),
+        carry  = BDD.False;
+    for (let i = 0, a, b; i < bitLen; i++) {
+        a = as[i];
+        b = bs[i];
+        sum[i] = carry.xor(a).xor(b);           // sum[i]    = 1  <=>  nr of 1s in {this[i], bs[i], carry} is odd
+        carry = carry.ite(a.or(b), a.and(b));   // carry-out = 1  <=>  nr of 1s in {this[i], bs[i], carry} is two or three
+    }
+    sum = bitstr.apply(null, sum);
+    return sum;
+}
+
+function plusB(as, bs) {
+    var bitLen = bs.length,
+        sum    = new Array(bitLen),
+        carry  = BDD.False;
+    for (let i = 0, a, b; i < bitLen; i++) {
+        a = as[i];
+        b = bs[i];
+        sum[i] = carry.ite(a.eqv(b), a.xor(b));           // sum[i]    = 1  <=>  nr of 1s in {this[i], bs[i], carry} is odd
+        carry = carry.ite(a.or(b), a.and(b));   // carry-out = 1  <=>  nr of 1s in {this[i], bs[i], carry} is two or three
+    }
+    sum = bitstr.apply(null, sum);
+    return sum;
+}
+
+
+
+
+var BDDstats_old;
+
+BDDstats_old = BDD.stats();
+p = plusA(a1, a2);
+console.log(BDD.stats().diff(BDDstats_old));
+
+BDDstats_old = BDD.stats();
+p = plusB(a1, a2);
+console.log(BDD.stats().diff(BDDstats_old));
+
+
+
+process.exit();
 g.node(p);
 
 function *fromBinary(bits, idx) {
@@ -248,8 +293,8 @@ function mkLabel2(n, extract) {
 
 //explicit_LTS(g, { a: as });
 var explStats;
-explStats = explicit_LTS(p, { a1: a1, a2: a2 , a3: a3 }, mkLabel2);
-explStats.addToGraph(g);
+explStats = explicit_LTS(p, { a1: a1, a2: a2 });    //, mkLabel2);
+//explStats.addToGraph(g);
 console.log('size of transition rel.: ' + p.size);
 var BDDstats = BDD.stats();
 //console.log(BDDstats);
@@ -258,9 +303,11 @@ console.log('instances: ' + BDDstats.instCount
         + '\nsizeCalls: ' + BDDstats.sizeCalls
         + '\n iteCalls: ' + util.inspect(BDDstats.iteCalls)
 );
+
 console.log(explStats);
 
-//process.exit();
+
+process.exit();
 
 
 /* without no_overlap:
