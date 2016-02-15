@@ -4,7 +4,7 @@ const pa     = require('pimped-assert'),
       assert = pa.assert,
       refute = pa.refute;
 
-/* module under test: */
+/* unit under test: */
 const BDD = require('../lib/BDD'),
       T    = BDD.True,
       F    = BDD.False,
