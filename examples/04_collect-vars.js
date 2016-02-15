@@ -15,9 +15,9 @@ const BDD    = require('../lib/BDD'),
       bitstr = require('../lib/BDD-bitstr').bitstr;
 
 let bitLen = 4,
-    a = bitstr(BDD.var('0a'), BDD.var('1a'), BDD.var('2a'), BDD.var('3a')),    //     bitstr('a', bitLen),    //
-    b = bitstr(BDD.var('0b'), BDD.var('1b'), BDD.var('2b'), BDD.var('3b')),    //     bitstr('b', bitLen),    //
-    c = bitstr(BDD.var('0c'), BDD.var('1c'), BDD.var('2c'), BDD.var('3c')),    //     bitstr('c', bitLen),    //
+    a = bitstr('a', bitLen),    //     bitstr(BDD.var('0a'), BDD.var('1a'), BDD.var('2a'), BDD.var('3a')),    //
+    b = bitstr('b', bitLen),    //     bitstr(BDD.var('0b'), BDD.var('1b'), BDD.var('2b'), BDD.var('3b')),    //
+    c = bitstr('c', bitLen),    //     bitstr(BDD.var('0c'), BDD.var('1c'), BDD.var('2c'), BDD.var('3c')),    //
     p, q, r,
     stats1, stats2
 ;
