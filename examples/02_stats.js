@@ -30,7 +30,7 @@ function tryit() {
         diff;
     //p = a1_plus_a2.neq2( a3);
 
-    p = a1.neq(a3);
+    p = a1.eq(a3);
     //p = a1.neq2(a3);
 
 /*
@@ -47,7 +47,7 @@ function tryit() {
 */
 
     diff = BDD.stats().getCalls - getCalls;
-    console.log('getCalls: ' + diff);
+    console.log('getCalls: ' + diff + ", p.size: " + p.size);
     return diff;
 }
 
