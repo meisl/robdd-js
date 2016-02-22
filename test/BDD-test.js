@@ -143,3 +143,27 @@ refute.same(T, F, "BDD.True is different from BDD.False");
     });
 }();
 
+
+/* n-ary and */
+() => {
+    let a = BDD.var('a'),
+        b = BDD.var('b'),
+        c = BDD.var('c'),
+        d = BDD.var('d'),
+        result, exp;
+
+    // exactly 1 of a, b, c is T:
+    result = and(
+        and(a,       b.not(), c.not()).not(),
+        and(a.not(), b,       c.not()).not(),
+        and(a.not(), b.not(), c      ).not()
+    ).not();
+    exp = ite(a, ite(b, F, c.not()), ite(b, c.not(), c));
+    assert.same(result, exp, "\n" + result.toIteStr() + " should equal\n" + exp.toIteStr());
+
+    result = and(b, b, a.or(c), d, c, b, d, c, a, a.or(c));
+    //console.log(util.inspect(f.calls, { depth: null }));
+    assert.same(result, ite(a, ite(b, ite(c, d, F), F), F));
+
+
+}();
