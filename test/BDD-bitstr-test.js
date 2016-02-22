@@ -319,3 +319,54 @@ const BitStr = require('../lib/BDD-bitstr'),
     });
 }();
 
+
+/* bitstr.lt */
+() => {
+    const bitLen = 4,
+          as = bitstr('a', bitLen),
+          bs = bitstr('b', bitLen),
+          k = 11,
+          ks = bitstr(k,  bitLen);
+
+    assert.throws(() => { as.lt("fooo") }, "as.lt expects a number or a bitstr as arg");
+    assert.throws(() => { as.lt(bitstr('a', as.length + 1)) }, "as.lt(bs) expects same .length of as and bs");
+
+    refute.throws(() => { as.lt(12) }, "as.lt accepts a number as arg");
+
+    for (let i = 0; i < (1 << bitLen); i++) {
+        if (i < k) {
+            let actual = imp(as.eq(i), as.lt(k));
+            assert.same(actual, T, "as.eq(" + i + ") => as.lt(" + k + "); so\n" + actual.toIteStr() + " should equal\nT\n");
+        } else {
+            let actual = imp(as.lt(k), as.neq(i));
+            assert.same(actual, T, "as.lt(" + k + ") => as.neq(" + i + "); so\n" + actual.toIteStr() + " should equal\nT\n");
+        }
+    }
+
+}();
+
+
+/* bitstr.lte */
+() => {
+    const bitLen = 4,
+          as = bitstr('a', bitLen),
+          bs = bitstr('b', bitLen),
+          k = 11,
+          ks = bitstr(k,  bitLen);
+
+    assert.throws(() => { as.lte("fooo") }, "as.lte expects a number or a bitstr as arg");
+    assert.throws(() => { as.lte(bitstr('a', as.length + 1)) }, "as.lte(bs) expects same .length of as and bs");
+
+    refute.throws(() => { as.lte(12) }, "as.lte accepts a number as arg");
+
+    for (let i = 0; i < (1 << bitLen); i++) {
+        if (i <= k) {
+            let actual = imp(as.eq(i), as.lte(k));
+            assert.same(actual, T, "as.eq(" + i + ") => as.lte(" + k + "); so\n" + actual.toIteStr() + " should equal\nT\n");
+        } else {
+            let actual = imp(as.lte(k), as.neq(i));
+            assert.same(actual, T, "as.lte(" + k + ") => as.neq(" + i + "); so\n" + actual.toIteStr() + " should equal\nT\n");
+        }
+    }
+
+}();
