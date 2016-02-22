@@ -86,16 +86,26 @@ refute.same(T, F, "BDD.True is different from BDD.False");
                 "arity " + arity + ' operator ' + opName + " should map (" + args.join(', ') + ') to ' + result);
         }
 
-
-        assert.typeof(T[opName], "function", "BDD object T provides a ." + opName + " method");
-        assert.typeof(F[opName], "function", "BDD object F provides a ." + opName + " method");
-        for (let i = 0; i < tt.length; i++) {
-            let line     = tt[i],
-                invocant = line[0],
-                args     = line.slice(1, arity),    // arity of the operator, NOT the method (which gets the 1st arg as this)
-                result   = line[arity];
-            assert.same(invocant[opName].apply(invocant, args), result,
-                "arity " + (arity-1) + ' method .' + opName + ' on ' + invocant + " should map (" + args.join(', ') + ') to ' + result);
+        if (arity === 1) {
+            for (let i = 0; i < tt.length; i++) {
+                let line     = tt[i],
+                    invocant = line[0],
+                    result   = line[1];
+                assert.same(invocant[opName], result,
+                    'getter .' + opName + ' on ' + invocant + ' should return ' + result);
+                assert.throws(() => { invocant[opName] = result; }, '.' + opName + ' should not be a setter');
+            }
+        } else {
+            assert.typeof(T[opName], "function", "BDD object T provides a ." + opName + " method");
+            assert.typeof(F[opName], "function", "BDD object F provides a ." + opName + " method");
+            for (let i = 0; i < tt.length; i++) {
+                let line     = tt[i],
+                    invocant = line[0],
+                    args     = line.slice(1, arity),    // arity of the operator, NOT the method (which gets the 1st arg as this)
+                    result   = line[arity];
+                assert.same(invocant[opName].apply(invocant, args), result,
+                    "arity " + (arity-1) + ' method .' + opName + ' on ' + invocant + " should map (" + args.join(', ') + ') to ' + result);
+            }
         }
     }
 }();
@@ -106,18 +116,18 @@ refute.same(T, F, "BDD.True is different from BDD.False");
         b = BDD.var('b'),
         c = BDD.var('c');
     [
-        [T                 ,    1],
-        [a                 ,    3],
-        [b                 ,    3],
-        [ite(a, b, T)      ,    4],
-        [ite(a, b, F)      ,    4],
-        [ite(a, b, b.not()),    5],
-        [a.xor(b.xor(c)),       7], // var order doesn't matter since xor is commutative and associative
+        [T               ,    1],
+        [a               ,    3],
+        [b               ,    3],
+        [ite(a, b, T)    ,    4],
+        [ite(a, b, F)    ,    4],
+        [ite(a, b, b.not),    5],
+        [a.xor(b.xor(c)),     7], // var order doesn't matter since xor is commutative and associative
     ].forEach(arr => {
         let bdd  = arr[0];
         let size = arr[1];
-        assert.same(bdd      .size, size);
-        assert.same(bdd.not().size, size);
+        assert.same(bdd    .size, size);
+        assert.same(bdd.not.size, size);
     });
 }();
 
@@ -129,7 +139,8 @@ refute.same(T, F, "BDD.True is different from BDD.False");
         b = BDD.var('b'),
         c = BDD.var('c');
 
-    [   a, b, c,
+    [   T, F,
+        a, b, c,
         ite(a, b, c),
         ite(a, c, b),
         ite(b, a, c),
@@ -137,9 +148,9 @@ refute.same(T, F, "BDD.True is different from BDD.False");
         ite(c, a, b),
         ite(c, b, a),
     ].forEach(p => {
-        refute.same(p,       p.not());
-        assert.same(p,       p.not().not());
-        assert.same(p.not(), ite(p, F, T));
+        refute.same(p,     p.not);
+        assert.same(p,     p.not.not);
+        assert.same(p.not, ite(p, F, T));
     });
 }();
 
@@ -154,16 +165,13 @@ refute.same(T, F, "BDD.True is different from BDD.False");
 
     // exactly 1 of a, b, c is T:
     result = and(
-        and(a,       b.not(), c.not()).not(),
-        and(a.not(), b,       c.not()).not(),
-        and(a.not(), b.not(), c      ).not()
-    ).not();
-    exp = ite(a, ite(b, F, c.not()), ite(b, c.not(), c));
+        and(a,       b.not, c.not).not,
+        and(a.not, b,       c.not).not,
+        and(a.not, b.not, c      ).not
+    ).not;
+    exp = ite(a, ite(b, F, c.not), ite(b, c.not, c));
     assert.same(result, exp, "\n" + result.toIteStr() + " should equal\n" + exp.toIteStr());
 
     result = and(b, b, a.or(c), d, c, b, d, c, a, a.or(c));
-    //console.log(util.inspect(f.calls, { depth: null }));
     assert.same(result, ite(a, ite(b, ite(c, d, F), F), F));
-
-
 }();

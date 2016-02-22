@@ -41,7 +41,7 @@ function collectVars2(p) {
     } else {
         let r = BDD.var(p.label),
             t = collectVars2(p.onTrue),
-            e = collectVars2(p.onFalse.and(p.onTrue.not()));
+            e = collectVars2(and(p.onFalse, p.onTrue.not));
         r = r.and(t).and(e);
         return r;
     }

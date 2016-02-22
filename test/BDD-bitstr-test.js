@@ -314,7 +314,7 @@ const BitStr = require('../lib/BDD-bitstr'),
 
     [as, bs, ks].forEach(left => {
         [as, bs, ks].forEach(right => {
-            assert.same(left.neq(right), left.eq(right).not(), "a.neq(b)  is equivalent to  not(a.eq(b))");
+            assert.same(left.neq(right), left.eq(right).not, "a.neq(b)  is equivalent to  not(a.eq(b))");
         });
     });
 }();
