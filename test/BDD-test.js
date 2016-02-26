@@ -163,6 +163,13 @@ refute.same(T, F, "BDD.True is different from BDD.False");
         d = BDD.var('d'),
         result, exp;
 
+    assert.same(and(),     T, "empty AND should equal T");
+    assert.same(and(a),    a, "AND with one arg should equal that arg");
+    assert.same(and(a, T), a, "unit (neutral element) of AND is T (a)");
+    assert.same(and(T, a), a, "unit (neutral element) of AND is T (b)");
+    assert.same(and(a, F), F, "zero of AND is F (a)");
+    assert.same(and(F, a), F, "zero of AND is F (b)");
+
     // exactly 1 of a, b, c is T:
     result = and(
         and(a,       b.not, c.not).not,
@@ -173,5 +180,36 @@ refute.same(T, F, "BDD.True is different from BDD.False");
     assert.same(result, exp, "\n" + result.toIteStr() + " should equal\n" + exp.toIteStr());
 
     result = and(b, b, a.or(c), d, c, b, d, c, a, a.or(c));
+    assert.same(result, and(a, b, c, d));
     assert.same(result, ite(a, ite(b, ite(c, d, F), F), F));
+}();
+
+
+/* n-ary or */
+() => {
+    let a = BDD.var('a'),
+        b = BDD.var('b'),
+        c = BDD.var('c'),
+        d = BDD.var('d'),
+        result, exp;
+
+    assert.same(or(),     F, "empty OR should equal F");
+    assert.same(or(a),    a, "OR with one arg should equal that arg");
+    assert.same(or(a, F), a, "unit (neutral element) of OR is F (a)");
+    assert.same(or(F, a), a, "unit (neutral element) of OR is F (b)");
+    assert.same(or(a, T), T, "zero of OR is T (a)");
+    assert.same(or(T, a), T, "zero of OR is T (b)");
+
+    // exactly 1 of a, b, c is T:
+    result = or(
+        or(a.not, b,     c    ).not,    // equiv to and(a, b.not, c.not)
+        or(a,     b.not, c    ).not,    // equiv to and(a.not, b, c.not)
+        or(a,     b,     c.not).not     // equiv to and(a.not, b.not, c)
+    );
+    exp = ite(a, ite(b, F, c.not), ite(b, c.not, c));
+    assert.same(result, exp, "\n" + result.toIteStr() + " should equal\n" + exp.toIteStr());
+
+    result = or(b, b, a.and(c), d, c, b, d, c, a, a.and(c));
+    assert.same(result, or(a, b, c, d));
+    assert.same(result, ite(a, T, ite(b, T, ite(c, T, d))));
 }();
