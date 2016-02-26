@@ -1,5 +1,6 @@
 "use strict";
 
+const util   = require('util');
 const pa     = require('pimped-assert'),
       assert = pa.assert,
       refute = pa.refute;
@@ -18,7 +19,8 @@ const BDD = require('../lib/BDD'),
 
 /* module under test: */
 const BitStr = require('../lib/BDD-bitstr'),
-      bitstr = BitStr.bitstr
+      bitstr = BitStr.bitstr,
+      zip    = BitStr.zip
 ;
 
 () => {
@@ -220,6 +222,86 @@ const BitStr = require('../lib/BDD-bitstr'),
         assert.same(call.args[0], as[i], "as.zip(bs).map called the fn with 1st arg from as");
         assert.same(call.args[1], bs[i], "as.zip(bs).map called the fn with 2nd arg from bs");
     });
+
+}();
+
+
+/* zip */
+() => {
+    const bitLen = 4,
+          as = bitstr('a', bitLen),
+          bs = bitstr('b', bitLen),
+          cs = bitstr('c', bitLen),
+          zs = zip(as, bs);
+    let i, k, ks, last;
+
+    assert.throws(() => { zip(as, bitstr('b', as.length + 1)) }, "zip(as, bs) expects same .length of as and bs");
+    refute.throws(() => { zip(as, 12) }, "zip(as, n) accepts a number as arg n");
+
+    assert.typeof(zs.map,    "function", "zip(as, bs) provides a .map function");
+
+    // zip().map
+    assert.throws(() => { zs.map("foobar") }, "zip().map throws when given a non-function as callback arg");
+
+    let calls = [],
+        xs    = zs.map(function (a, b) { calls.push({ thisArg: this, args: arguments, return: a }); return a; });
+    assert.same(calls.length, as.length, "zip(as, bs).map called the provided function .length times");
+    assert(xs.length, as.length, "zip().map returned a bitstr of the same length");
+    calls.forEach( (call, i) => {
+        assert.same(call.args[0], as[i], "zip(as, bs).map called the fn with 1st arg from as");
+        assert.same(call.args[1], bs[i], "zip(as, bs).map called the fn with 2nd arg from bs");
+    });
+
+    // zip().reduce
+    let initial = {};
+    calls = [],
+        xs    = zs.reduce(function (acc, a, b) { let ret = [acc]; calls.push({ thisArg: this, args: arguments, return: ret }); return ret; }, initial);
+    assert.same(calls.length, as.length, ".reduce called the provided function .length times");
+    assert(xs, calls[calls.length-1].return, ".reduce returned what the function returned last");
+    calls.forEach( (call, i) => {
+        if (i === 0) {
+            assert.same(call.args[0], initial, "zip(as, bs).reduce called the fn with 1st arg the provided initial value");
+        } else {
+            assert.same(call.args[0], calls[i-1].return, "zip(as, bs).reduce called the fn with 1st arg being what the fn returned last");
+        }
+        assert.same(call.args[1], as[i], "zip(as, bs).reduce called the fn with 2nd arg from as");
+        assert.same(call.args[2], bs[i], "zip(as, bs).reduce called the fn with 3rd arg from bs");
+    });
+
+    // zipping 2 bitstrs
+    i = 0;
+    for (let z of zip(as, bs).columns) {
+        assert.deepEqual(z, [as[i], bs[i]]);
+        if (i > 0) {
+            refute.same(z, last, "zip().columns creates new array each time around");
+        }
+        last = z;
+        i++;
+    }
+
+    // zipping 3 bitstrs
+    i = 0;
+    for (let z of zip(as, bs, cs).columns) {
+        assert.deepEqual(z, [as[i], bs[i], cs[i]]);
+        if (i > 0) {
+            refute.same(z, last, "zip().columns creates new array each time around");
+        }
+        last = z;
+        i++;
+    }
+
+    // zipping 3 bitstrs and a constant
+    i = 0;
+    k = 12;
+    ks = bitstr(k, bitLen)
+    for (let z of zip(as, bs, k, cs).columns) {
+        assert.deepEqual(z, [as[i], bs[i], ks[i], cs[i]]);
+        if (i > 0) {
+            refute.same(z, last, "zip().columns creates new array each time around");
+        }
+        last = z;
+        i++;
+    }
 
 }();
 
