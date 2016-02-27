@@ -155,6 +155,50 @@ refute.same(T, F, "BDD.True is different from BDD.False");
 }();
 
 
+/* binary and */
+() => {
+    let a = BDD.var('a'),
+        b = BDD.var('b'),
+        c = BDD.var('c'),
+        d = BDD.var('d'),
+        result, exp;
+
+    assert.same(and(a, T), a, "unit (neutral element) of AND is T (a)");
+    assert.same(and(T, a), a, "unit (neutral element) of AND is T (b)");
+    assert.same(and(a, F), F, "zero of AND is F (a)");
+    assert.same(and(F, a), F, "zero of AND is F (b)");
+    assert.same(and(a, a), a, "var a is idempotent wrt AND");
+    assert.same(and(a, a.not), F, "a AND a.not is F");
+    assert.same(and(a, b), and(b, a), "AND is commutative");
+    assert.same(and(a, b), ite(a, b, F), "a AND b in terms of ite: ite(a, b, F) (a)");
+    assert.same(and(a, b), ite(b, a, F), "a AND b in terms of ite: ite(b, a, F) (b)");
+    assert.same(and(a, and(a, b)), and(and(a, a), b), "a AND (a AND b)  ===  (a AND a) AND b");
+    assert.same(and(a, and(b, c)), and(and(a, b), c), "a AND (b AND c)  ===  (a AND b) AND c");
+}();
+
+
+/* binary or */
+() => {
+    let a = BDD.var('a'),
+        b = BDD.var('b'),
+        c = BDD.var('c'),
+        d = BDD.var('d'),
+        result, exp;
+
+    assert.same(or(a, F), a, "unit (neutral element) of OR is F (a)");
+    assert.same(or(F, a), a, "unit (neutral element) of OR is F (b)");
+    assert.same(or(a, T), T, "zero of OR is T (a)");
+    assert.same(or(T, a), T, "zero of OR is T (b)");
+    assert.same(or(a, a), a, "var a is idempotent wrt OR");
+    assert.same(or(a, a.not), T, "a OR a.not is T");
+    assert.same(or(a, b), or(b, a), "OR is commutative");
+    assert.same(or(a, b), ite(a, T, b), "a OR b in terms of ite: ite(a, T, b) (a)");
+    assert.same(or(a, b), ite(b, T, a), "a OR b in terms of ite: ite(b, T, a) (b)");
+    assert.same(or(a, or(a, b)), or(or(a, a), b), "a OR (a OR b)  ===  (a OR a) OR b");
+    assert.same(or(a, or(b, c)), or(or(a, b), c), "a OR (b OR c)  ===  (a OR b) OR c");
+}();
+
+
 /* binary eqv */
 () => {
     let a = BDD.var('a'),
@@ -177,7 +221,7 @@ refute.same(T, F, "BDD.True is different from BDD.False");
 }();
 
 
-/* binary and */
+/* binary xor */
 () => {
     let a = BDD.var('a'),
         b = BDD.var('b'),
@@ -185,17 +229,17 @@ refute.same(T, F, "BDD.True is different from BDD.False");
         d = BDD.var('d'),
         result, exp;
 
-    assert.same(and(a, T), a, "unit (neutral element) of AND is T (a)");
-    assert.same(and(T, a), a, "unit (neutral element) of AND is T (b)");
-    assert.same(and(a, F), F, "zero of AND is F (a)");
-    assert.same(and(F, a), F, "zero of AND is F (b)");
-    assert.same(and(a, a), a, "var a is idempotent wrt AND");
-    assert.same(and(a, a.not), F, "a AND a.not is F");
-    assert.same(and(a, b), and(b, a), "AND is commutative");
-    assert.same(and(a, b), ite(a, b, F), "a AND b in terms of ite: ite(a, b, F) (a)");
-    assert.same(and(a, b), ite(b, a, F), "a AND b in terms of ite: ite(b, a, F) (b)");
-    assert.same(and(a, and(a, b)), and(and(a, a), b), "a AND (a AND b)  ===  (a AND a) AND b");
-    assert.same(and(a, and(b, c)), and(and(a, b), c), "a AND (b AND c)  ===  (a AND b) AND c");
+    assert.same(xor(a, F), a, "unit (neutral element) of XOR is F (a)");
+    assert.same(xor(F, a), a, "unit (neutral element) of XOR is F (b)");
+    assert.same(xor(a, T), a.not, "a XOR T is a.not (a)");
+    assert.same(xor(T, a), a.not, "T XOR a is a.not (b)");
+    assert.same(xor(a, a), F, "a XOR a is F");
+    assert.same(xor(a, a.not), T, "a XOR a.not is T");
+    assert.same(xor(a, b), xor(b, a), "XOR is commutative");
+    assert.same(xor(a, b), ite(a, b.not, b), "a XOR b in terms of ite: ite(a, b.not, b) (a)");
+    assert.same(xor(a, b), ite(b, a.not, a), "a XOR b in terms of ite: ite(b, a.not, a) (b)");
+    assert.same(xor(a, xor(a, b)), xor(xor(a, a), b), "a XOR (a XOR b)  ===  (a XOR a) XOR b");
+    assert.same(xor(a, xor(b, c)), xor(xor(a, b), c), "a XOR (b XOR c)  ===  (a XOR b) XOR c");
 }();
 
 
@@ -235,10 +279,6 @@ refute.same(T, F, "BDD.True is different from BDD.False");
 
     assert.same(or(),     F, "empty OR should equal F");
     assert.same(or(a),    a, "OR with one arg should equal that arg");
-    assert.same(or(a, F), a, "unit (neutral element) of OR is F (a)");
-    assert.same(or(F, a), a, "unit (neutral element) of OR is F (b)");
-    assert.same(or(a, T), T, "zero of OR is T (a)");
-    assert.same(or(T, a), T, "zero of OR is T (b)");
 
     // exactly 1 of a, b, c is T:
     result = or(
