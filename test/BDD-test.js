@@ -155,6 +155,50 @@ refute.same(T, F, "BDD.True is different from BDD.False");
 }();
 
 
+/* binary eqv */
+() => {
+    let a = BDD.var('a'),
+        b = BDD.var('b'),
+        c = BDD.var('c'),
+        d = BDD.var('d'),
+        result, exp;
+
+    assert.same(eqv(a, T), a, "unit (neutral element) of EQV is T (a)");
+    assert.same(eqv(T, a), a, "unit (neutral element) of EQV is T (b)");
+    assert.same(eqv(a, F), a.not, "a EQV F is a.not (a)");
+    assert.same(eqv(F, a), a.not, "F EQV a is a.not (b)");
+    assert.same(eqv(a, a), T, "a EQV a is T");
+    assert.same(eqv(a, a.not), F, "a EQV a.not is F");
+    assert.same(eqv(a, b), eqv(b, a), "EQV is commutative");
+    assert.same(eqv(a, b), ite(a, b, b.not), "a EQV b in terms of ite: ite(a, b, b.not) (a)");
+    assert.same(eqv(a, b), ite(b, a, a.not), "a EQV b in terms of ite: ite(b, a, a.not) (b)");
+    assert.same(eqv(a, eqv(a, b)), eqv(eqv(a, a), b), "a EQV (a EQV b)  ===  (a EQV a) EQV b");
+    assert.same(eqv(a, eqv(b, c)), eqv(eqv(a, b), c), "a EQV (b EQV c)  ===  (a EQV b) EQV c");
+}();
+
+
+/* binary and */
+() => {
+    let a = BDD.var('a'),
+        b = BDD.var('b'),
+        c = BDD.var('c'),
+        d = BDD.var('d'),
+        result, exp;
+
+    assert.same(and(a, T), a, "unit (neutral element) of AND is T (a)");
+    assert.same(and(T, a), a, "unit (neutral element) of AND is T (b)");
+    assert.same(and(a, F), F, "zero of AND is F (a)");
+    assert.same(and(F, a), F, "zero of AND is F (b)");
+    assert.same(and(a, a), a, "var a is idempotent wrt AND");
+    assert.same(and(a, a.not), F, "a AND a.not is F");
+    assert.same(and(a, b), and(b, a), "AND is commutative");
+    assert.same(and(a, b), ite(a, b, F), "a AND b in terms of ite: ite(a, b, F) (a)");
+    assert.same(and(a, b), ite(b, a, F), "a AND b in terms of ite: ite(b, a, F) (b)");
+    assert.same(and(a, and(a, b)), and(and(a, a), b), "a AND (a AND b)  ===  (a AND a) AND b");
+    assert.same(and(a, and(b, c)), and(and(a, b), c), "a AND (b AND c)  ===  (a AND b) AND c");
+}();
+
+
 /* n-ary and */
 () => {
     let a = BDD.var('a'),
@@ -165,10 +209,6 @@ refute.same(T, F, "BDD.True is different from BDD.False");
 
     assert.same(and(),     T, "empty AND should equal T");
     assert.same(and(a),    a, "AND with one arg should equal that arg");
-    assert.same(and(a, T), a, "unit (neutral element) of AND is T (a)");
-    assert.same(and(T, a), a, "unit (neutral element) of AND is T (b)");
-    assert.same(and(a, F), F, "zero of AND is F (a)");
-    assert.same(and(F, a), F, "zero of AND is F (b)");
 
     // exactly 1 of a, b, c is T:
     result = and(
