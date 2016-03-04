@@ -33,12 +33,12 @@ const BDDser = require('../lib/BDD-serialization'),
     let s, p,
         a       = BDD.var('a'),
         b       = BDD.var('b'),
-        bitLen  = 4,
+        bitLen  = 2,
         xs      = bitstr('x', bitLen),
         ys      = bitstr('y', bitLen);
 
     function check(p) {
-        let s = serialize(p);//.optimize();
+        let s = serialize(p).optimize();
         console.log(p.size + "/" + p.toIteStr() + ":\n" + s.toString() + "\n" + s.instructions.join(','));
         assert.same(deserialize(s), p, util.inspect(s));
 

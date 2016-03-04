@@ -332,7 +332,7 @@ refute.same(T, F, "BDD.True is different from BDD.False");
         d = BDD.var('d');
 
     function check(bdd) {
-        let msg = 'eval("' + bdd.toSrc() + "')(BDD);";
+        let msg = 'eval("' + bdd.toSrc() + '")(BDD);';
         console.log(msg);
         assert.same(eval(bdd.toSrc())(BDD), bdd, msg);
     }
