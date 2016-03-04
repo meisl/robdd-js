@@ -38,7 +38,7 @@ const BDDser = require('../lib/BDD-serialization'),
         ys      = bitstr('y', bitLen);
 
     function check(p) {
-        let s = serialize(p).optimize();
+        let s = serialize(p);//.optimize();
         console.log(p.size + "/" + p.toIteStr() + ":\n" + s.toString() + "\n" + s.instructions.join(','));
         assert.same(deserialize(s), p, util.inspect(s));
 
@@ -59,4 +59,5 @@ const BDDser = require('../lib/BDD-serialization'),
     ].forEach(check);
     //gv.render(xs.lte(ys));
 }();
+
 
