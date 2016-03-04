@@ -293,3 +293,68 @@ refute.same(T, F, "BDD.True is different from BDD.False");
     assert.same(result, or(a, b, c, d));
     assert.same(result, ite(a, T, ite(b, T, ite(c, T, d))));
 }();
+
+
+/* .get */
+() => {
+    let a = BDD.var('a'),
+        b = BDD.var('b'),
+        c = BDD.var('c'),
+        d = BDD.var('d');
+
+    function check(l, t, e) {
+        let msg = "BDD.get('" + l + "', " + t.toIteStr() + ", " + e.toIteStr() + ")";
+        assert.same(BDD.get(l, t, e), ite(BDD.var(l), t, e), msg);
+    }
+
+    [
+        ['a', T, F],
+        ['a', T, T],
+        ['a', F, F],
+        ['b', T, F],
+        ['b', T, T],
+        ['b', F, F],
+        ['a', b, c],
+        ['a', c, b],
+        ['b', a, c],
+        ['b', c, a],
+        ['c', a, b],
+        ['c', b, a],
+    ].forEach(args => check.apply(null, args));
+}();
+
+
+/* .toSrc() */
+() => {
+    let a = BDD.var('a'),
+        b = BDD.var('b'),
+        c = BDD.var('c'),
+        d = BDD.var('d');
+
+    function check(bdd) {
+        let msg = 'eval("' + bdd.toSrc() + "')";
+        console.log(msg);
+        assert.same(eval(bdd.toSrc()), bdd, msg);
+    }
+
+    [
+        T, F,
+        a, b, c,
+        a.not, b.not, c.not,
+        and(a, b, c),
+        and(a, b, c.not),
+        and(a, c, b),
+        and(a, c, b.not),
+        and(b, a, c),
+        and(b, a, c.not),
+        and(b, c, a),
+        and(b, c, a.not),
+        and(c, a, b),
+        and(c, a, b.not),
+        and(c, b, a),
+        and(c, b, a.not),
+    ].forEach(bdd => {
+        check(bdd);
+    });
+
+}();
