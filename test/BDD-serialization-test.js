@@ -33,7 +33,7 @@ const BDDser = require('../lib/BDD-serialization'),
     let s, p,
         a       = BDD.var('a'),
         b       = BDD.var('b'),
-        bitLen  = 2,
+        bitLen  = 3,
         xs      = bitstr('x', bitLen),
         ys      = bitstr('y', bitLen);
 
