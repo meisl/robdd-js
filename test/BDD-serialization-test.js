@@ -39,30 +39,43 @@ const BDDser = require('../lib/BDD-serialization'),
         xs      = bitstr('x', bitLen),
         ys      = bitstr('y', bitLen);
 
-    function check(p) {
-        let s    = serialize(p),
-            size = p.size;
+    function check(p, s) {
+        let size = p.size,
+            lbls = [],
+            xs   = s.init();
+
+        s.run((targetSlot, label, thenSlot, elseSlot, labelIdx) => {
+            let t = xs[thenSlot],
+                e = xs[elseSlot],
+                tl = t.isTerminal ? -1 : s.labelIdx(t),
+                el = e.isTerminal ? -1 : s.labelIdx(e),
+                m = Math.max(tl, el);
+            xs[targetSlot] = BDD.get(label, t, e);
+            if (m < 0) {
+                lbls.push(-labelIdx);
+            } else {
+                lbls.push(labelIdx - m);
+            }
+        });
         console.log("---------");
         console.log(p.size + "/" + p.toIteStr() + ":\n" + s.toString() + "\n" + s.instructions.join(','));
         console.log(p.size + "/" + p.toIteStr());
-        for (let i = 0; i < 2; i++) {
-            let json = JSON.stringify(s);
-            console.log(json);
-            assert.same(s.BDDsize, size, ".BDDsize");
-            assert(s.maxLen <= Math.max(2, s.BDDsize), ".maxLen should be lte max(.BDDsize, 2)");
+        console.log("labelDeltas: [" + lbls.join(",") + "]");
 
-            let expected = Math.max(0, size - 2),
-                actual   = s.instructionCount;
-            assert(actual <= expected, "should have " + expected + " or less instructions but has " + actual + ":\n" + util.inspect(s));
+        let json = JSON.stringify(s);
+        console.log(json);
+        assert.same(s.BDDsize, size, ".BDDsize");
+        assert(s.maxLen <= Math.max(2, s.BDDsize), ".maxLen should be lte max(.BDDsize, 2)");
 
-            assert.same(deserialize(s), p, util.inspect(s));
-            assert.same(deserialize(json), p, "deserialize from JSON:\n" + json);
+        let expected = Math.max(0, size - 2),
+            actual   = s.instructionCount;
+        assert(actual <= expected, "should have " + expected + " or less instructions but has " + actual + ":\n" + util.inspect(s));
 
-            s = s.optimize();
-        }
+        assert.same(deserialize(s), p, util.inspect(s));
+        assert.same(deserialize(json), p, "deserialize from JSON:\n" + json);
     }
 
-    [
+    let testData = [
         T, F,
         a, b,
         a.not, b.not,
@@ -71,7 +84,11 @@ const BDDser = require('../lib/BDD-serialization'),
         xs.eq(ys),
         xs.lte(ys),
         xs.eq(7),
-    ].forEach(check);
+    ];
+
+    testData.forEach(bdd => check(bdd, serialize(bdd)));
+    console.log("--- optimized ----");
+    testData.forEach(bdd => check(bdd, serialize(bdd).optimize()));
     //gv.render(xs.lte(ys));
 }();
 
