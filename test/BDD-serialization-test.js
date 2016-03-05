@@ -42,7 +42,8 @@ const BDDser = require('../lib/BDD-serialization'),
     function check(p) {
         let s    = serialize(p),
             size = p.size;
-        //console.log(p.size + "/" + p.toIteStr() + ":\n" + s.toString() + "\n" + s.instructions.join(','));
+        console.log("---------");
+        console.log(p.size + "/" + p.toIteStr() + ":\n" + s.toString() + "\n" + s.instructions.join(','));
         console.log(p.size + "/" + p.toIteStr());
         for (let i = 0; i < 2; i++) {
             let json = JSON.stringify(s);
