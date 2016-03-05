@@ -110,6 +110,34 @@ refute.same(T, F, "BDD.True is different from BDD.False");
     }
 }();
 
+
+/* BDD.isBDD */
+() => {
+    let a = BDD.var('a'),
+        b = BDD.var('b'),
+        c = BDD.var('c');
+    assert.same(BDD.isBDD(T), true);
+    assert.same(BDD.isBDD(F), true);
+    assert.same(BDD.isBDD(a), true);
+    assert.same(BDD.isBDD(b), true);
+    assert.same(BDD.isBDD(c), true);
+
+    assert.same(BDD.isBDD({}),    false);
+    assert.same(BDD.isBDD({label: "a", onTrue: T, onFalse: F}),    false);
+    assert.same(BDD.isBDD("foo"), false);
+    assert.same(BDD.isBDD(23),    false);
+
+    /*
+    // let's try really hard to fake one...
+    let x = Object.create(Object.getPrototypeOf(T), {
+        label:   { value: "a" },
+        onTrue:  { value: T   },
+        onFalse: { value: F   }
+    });
+    assert.same(BDD.isBDD(x), false);
+    */
+}();
+
 /* BDD.size */
 () => {
     let a = BDD.var('a'),
