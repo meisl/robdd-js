@@ -40,16 +40,22 @@ const BDDser = require('../lib/BDD-serialization'),
         ys      = bitstr('y', bitLen);
 
     function check(p) {
-        let s = serialize(p);
+        let s    = serialize(p),
+            size = p.size;
         //console.log(p.size + "/" + p.toIteStr() + ":\n" + s.toString() + "\n" + s.instructions.join(','));
-        console.log(p.size + "/" + p.toIteStr() + ":\n" + JSON.stringify(s));
-        assert.same(s.BDDsize, p.size, ".BDDsize");
-        assert(s.maxLen <= Math.max(2, s.BDDsize), ".maxLen should be lte max(.BDDsize, 2)");
-        assert.same(deserialize(s), p, util.inspect(s));
+        console.log(p.size + "/" + p.toIteStr());
+        for (let i = 0; i < 2; i++) {
+            console.log(JSON.stringify(s));
+            assert.same(s.BDDsize, size, ".BDDsize");
+            assert(s.maxLen <= Math.max(2, s.BDDsize), ".maxLen should be lte max(.BDDsize, 2)");
+            assert.same(deserialize(s), p, util.inspect(s));
 
-        let expected = Math.max(0, p.size - 2),
-            actual   = s.instructions.length / 4;
-        assert(actual <= expected, "should have " + expected + " or less instructions but has " + actual + ":\n" + util.inspect(s));
+            let expected = Math.max(0, size - 2),
+                actual   = s.instructionCount;
+            assert(actual <= expected, "should have " + expected + " or less instructions but has " + actual + ":\n" + util.inspect(s));
+
+            s = s.optimize();
+        }
     }
 
     [
