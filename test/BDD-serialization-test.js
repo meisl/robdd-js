@@ -36,6 +36,7 @@ const BDDser = require('../lib/BDD-serialization'),
         a       = BDD.var('a'),
         b       = BDD.var('b'),
         c       = BDD.var('c'),
+        d       = BDD.var('d'),
         bitLen  = 4,
         xs      = bitstr('x', bitLen),
         ys      = bitstr('y', bitLen);
@@ -58,24 +59,21 @@ const BDDser = require('../lib/BDD-serialization'),
             actual = s.labelIdx(p);
             assert.same(actual, expected, "labelIdx((bdd '" + p.label + "', ...)");
         }
-
-        s.run((targetSlot, label, thenSlot, elseSlot, labelIdx) => {
-            let t = xs[thenSlot],
-                e = xs[elseSlot],
-                tl = t.isTerminal ? -1 : s.labelIdx(t),
-                el = e.isTerminal ? -1 : s.labelIdx(e),
-                m = Math.max(tl, el);
-            xs[targetSlot] = BDD.get(label, t, e);
-            if (m < 0) {
-                lbls.push(-labelIdx);
-            } else {
-                lbls.push(labelIdx - m);
-            }
-        });
         console.log("---------");
-        console.log(p.size + "/" + p.toIteStr() + ":\n" + s.toString() + "\n" + s.instructions.join(','));
+        console.log(p.size + "/" + p.toIteStr() + ":");
+        console.log("labelDeltas: [" + [...s.labelDeltas()].join(",") + "]");
+        console.log(s.instructionCount + " instructions: " + s.instructions.join(','));
+        console.log(s.toString());
         console.log(p.size + "/" + p.toIteStr());
-        console.log("labelDeltas: [" + s.labelDeltas.join(",") + "]");
+
+        s.run((l, t, e) => {
+            let li = s.labelIdx(l),
+                ti = s.labelIdx(t),
+                ei = s.labelIdx(e),
+                m = Math.max(ti, ei);
+            lbls.push(ei - m);
+            return BDD.get(l, t, e);
+        });
 
         let json = JSON.stringify(s);
         console.log(json);
@@ -87,6 +85,7 @@ const BDDser = require('../lib/BDD-serialization'),
         assert(actual <= expected, "should have " + expected + " or less instructions but has " + actual + ":\n" + util.inspect(s));
 
         assert.same(deserialize(s), p, util.inspect(s));
+        console.log(json);
         assert.same(deserialize(json), p, "deserialize from JSON:\n" + json);
     }
 
@@ -100,10 +99,12 @@ const BDDser = require('../lib/BDD-serialization'),
         xs.lte(ys),
         xs.eq(7),
         ite(a, b, c),
+        ite(a, and(b, c), d),
+        ite(a, d, and(b, c)),
     ];
 
     testData.forEach(bdd => check(bdd, serialize(bdd)));
-    console.log("--- optimized ----");
+    console.log("------------------------- optimized -------------------------");
     testData.forEach(bdd => check(bdd, serialize(bdd).optimize()));
     //gv.render(xs.lte(ys));
 }();
