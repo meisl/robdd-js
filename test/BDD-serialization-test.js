@@ -35,14 +35,29 @@ const BDDser = require('../lib/BDD-serialization'),
     let s, p,
         a       = BDD.var('a'),
         b       = BDD.var('b'),
+        c       = BDD.var('c'),
         bitLen  = 4,
         xs      = bitstr('x', bitLen),
         ys      = bitstr('y', bitLen);
 
     function check(p, s) {
-        let size = p.size,
+        let actual,
+            expected,
+            size = p.size,
             lbls = [],
             xs   = s.init();
+
+        if (p.isTerminal) {
+            actual = s.labelIdx(p);
+            assert(actual < 0, "labelIdx(" + p + ") should be < 0 - but it is " + actual);
+            refute.same(actual, s.labelIdx(p.not), "labelIdx(" + p + ") should be !== labelIdx(" + p.not + ")");
+        } else {
+            actual = s.labels.indexOf(p.label);
+            assert(actual >= 0, p.label + " should be contained in .labels: " + util.inspect(s.labels));
+            expected = actual;
+            actual = s.labelIdx(p);
+            assert.same(actual, expected, "labelIdx((bdd '" + p.label + "', ...)");
+        }
 
         s.run((targetSlot, label, thenSlot, elseSlot, labelIdx) => {
             let t = xs[thenSlot],
@@ -60,15 +75,15 @@ const BDDser = require('../lib/BDD-serialization'),
         console.log("---------");
         console.log(p.size + "/" + p.toIteStr() + ":\n" + s.toString() + "\n" + s.instructions.join(','));
         console.log(p.size + "/" + p.toIteStr());
-        console.log("labelDeltas: [" + lbls.join(",") + "]");
+        console.log("labelDeltas: [" + s.labelDeltas.join(",") + "]");
 
         let json = JSON.stringify(s);
         console.log(json);
         assert.same(s.BDDsize, size, ".BDDsize");
         assert(s.maxLen <= Math.max(2, s.BDDsize), ".maxLen should be lte max(.BDDsize, 2)");
 
-        let expected = Math.max(0, size - 2),
-            actual   = s.instructionCount;
+        expected = Math.max(0, size - 2);
+        actual   = s.instructionCount;
         assert(actual <= expected, "should have " + expected + " or less instructions but has " + actual + ":\n" + util.inspect(s));
 
         assert.same(deserialize(s), p, util.inspect(s));
@@ -84,6 +99,7 @@ const BDDser = require('../lib/BDD-serialization'),
         xs.eq(ys),
         xs.lte(ys),
         xs.eq(7),
+        ite(a, b, c),
     ];
 
     testData.forEach(bdd => check(bdd, serialize(bdd)));
