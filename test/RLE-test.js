@@ -11,11 +11,8 @@ const RLE = require('../lib/RLE');
 
 
 () => {
-    let rle   = RLE.init(),
-        added = [];
-
-    assert.same(rle.decodedLength, 0);
-    assert.same(rle.encodedLength, 0);
+    let rle,
+        added;
 
     function testAdd(x) {
         assert.same(rle.decodedLength, added.length);
@@ -33,6 +30,21 @@ const RLE = require('../lib/RLE');
         assert.deepEqual(rle2.toJSON(), rle.toJSON());
     }
 
+
+
+    rle = RLE.init();
+    added = [];
+    [1,2].forEach(testAdd);
+    assert.same(rle.encodedLength, 3, "encodedLength for rle(" + added.join(',') + ")");
+    assert.deepEqual(rle.toJSON(), [ [ 1, 2 ] ]);
+
+    testAdd(2);
+    assert.same(rle.encodedLength, 4, "encodedLength for rle(" + added.join(',') + ")");
+    assert.deepEqual(rle.toJSON(), [ [ 1 ], { '2x': 2 } ]);
+
+
+    rle = RLE.init();
+    added = [];
     testAdd(1);
     assert.same(rle.encodedLength, 2, "encodedLength for rle(" + added.join(',') + ")");
     assert.deepEqual(rle.toJSON(), [ [ 1 ] ]);
