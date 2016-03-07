@@ -45,8 +45,10 @@ const BDDser = require('../lib/BDD-serialization'),
         let actual,
             expected,
             size = p.size,
-            lbls = [],
-            xs   = s.init();
+            lbls = s.labels,
+            foobar = BDD.var('foobar');
+
+        assert.throws( () => s.labelIdx(foobar), ".labelIdx on BDD " + util.inspect(p) + " with BDD with non-existent label / labels now: " + util.inspect(s.labels));
 
         if (p.isTerminal) {
             actual = s.labelIdx(p);
@@ -65,15 +67,6 @@ const BDDser = require('../lib/BDD-serialization'),
         console.log(s.instructionCount + " instructions: " + s.instructions.join(','));
         console.log(s.toString());
         console.log(p.size + "/" + p.toIteStr());
-
-        s.run((l, t, e) => {
-            let li = s.labelIdx(l),
-                ti = s.labelIdx(t),
-                ei = s.labelIdx(e),
-                m = Math.max(ti, ei);
-            lbls.push(ei - m);
-            return BDD.get(l, t, e);
-        });
 
         let json = JSON.stringify(s);
         console.log(json);
