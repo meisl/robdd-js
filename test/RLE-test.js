@@ -23,6 +23,14 @@ const RLE = require('../lib/RLE');
         added.push(x);
         assert.same(rle.decodedLength, added.length);
         assert.deepEqual([...rle], added, util.inspect(rle.codes));
+
+        let rle2;
+        rle2 = RLE.init(added);
+        assert.deepEqual([...rle2], added);
+        assert.deepEqual(rle2.toJSON(), rle.toJSON());
+        rle2 = RLE.init(...added);
+        assert.deepEqual([...rle2], added);
+        assert.deepEqual(rle2.toJSON(), rle.toJSON());
     }
 
     testAdd(1);
