@@ -61,26 +61,32 @@ const RLE = require('../lib/RLE');
     rle = RLE.init();
     added = [];
     [1,1,1,1,1,1,1,1,1,1].forEach(testAdd);
-    assert.same(rle.encodedLength, 2, "encodedLength for rle(" + added.join(',') + ")");
+    assert.same(rle.encodedLength, 2, "encodedLength for rle(" + added.join(',') + ") / " + util.inspect(rle.toJSON()));
     assert.deepEqual(rle.toJSON(), [ { '10x': 1 } ]);
 
     [2,2].forEach(testAdd);
-    assert.same(rle.encodedLength, 4, "encodedLength for rle(" + added.join(',') + ")");
+    assert.same(rle.encodedLength, 4, "encodedLength for rle(" + added.join(',') + ") / " + util.inspect(rle.toJSON()));
     assert.deepEqual(rle.toJSON(), [ { '10x': 1 }, { '2x': 2 } ]);
 
     testAdd(1);
-    assert.same(rle.encodedLength, 6, "encodedLength for rle(" + added.join(',') + ")");
+    assert.same(rle.encodedLength, 6, "encodedLength for rle(" + added.join(',') + ") / " + util.inspect(rle.toJSON()));
     assert.deepEqual(rle.toJSON(), [ { '10x': 1 }, [ 2, 2, 1 ] ]);
 
     testAdd(1);
-    assert.same(rle.encodedLength, 6, "encodedLength for rle(" + added.join(',') + ")");
-    assert.deepEqual(rle.toJSON(), [ { '10x': 1 }, { '2x': 1 }, { '2x': 1 } ]);
+    assert.same(rle.encodedLength, 6, "encodedLength for rle(" + added.join(',') + ") / " + util.inspect(rle.toJSON()));
+    assert.deepEqual(rle.toJSON(), [ { '10x': 1 }, { '2x': 2 }, { '2x': 1 } ]);
 
-    rle = RLE.init();
-    added = [];
-    [1,1,1,1,1,1,1,1,1,1,2,2,1,1,1,1,1,2,1,3,4,1,2,1,1].forEach(testAdd);
-    //assert.same(rle.encodedLength, 15, "encodedLength for rle(" + added.join(',') + ")");
-    assert.deepEqual(rle.toJSON(), []);
+    [1,1,1].forEach(testAdd);
+    assert.same(rle.encodedLength, 6, "encodedLength for rle(" + added.join(',') + ") / " + util.inspect(rle.toJSON()));
+    assert.deepEqual(rle.toJSON(), [ { '10x': 1 }, { '2x': 2 }, { '5x': 1 } ]);
+
+    [2,1,3,4,1,2,1,1].forEach(testAdd);
+    assert.same(rle.encodedLength, 15, "encodedLength for rle(" + added.join(',') + ") / " + util.inspect(rle.toJSON()));
+    assert.deepEqual(rle.toJSON(), [ { '10x': 1 }, { '2x': 2 }, { '5x': 1 }, [ 2, 1, 3, 4, 1, 2 ], { '2x': 1 } ]);
+
+    testAdd(7);
+    assert.same(rle.encodedLength, 16, "encodedLength for rle(" + added.join(',') + ") / " + util.inspect(rle.toJSON()));
+    assert.deepEqual(rle.toJSON(), [ { '10x': 1 }, { '2x': 2 }, { '5x': 1 }, [ 2, 1, 3, 4, 1, 2, 1, 1, 7 ] ]);
 
 }();
 
