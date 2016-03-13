@@ -21,5 +21,6 @@ const BDD = require('../lib/BDD'),
 const stats = BDD.stats;
 
 () => {
-    assert.typeof(stats, "function", "BDD exports a .stats function");
+    let s = stats();
+    assert.typeof(s, "object", "BDD.stats() returns an object");
 }();
