@@ -85,13 +85,10 @@ console.log(BDD.stats());
 //gv.render(q);
 console.log("-----------------");
 let s = serialize(q);
-console.log("serialize(q).maxLen: " + s.maxLen + " / " + s.BDDsize + " / " + s.instructionCount + " / " + s.labels.length + " labels");
-console.log("serialize(q).JSONlength: " + JSON.stringify(s).length );
-console.log("labelDeltas: [" + [...s.labelDeltas()].join(",") + "]");
+console.log("serialize(q):\n" + s.stats());
 console.log("pass 2...");
 s = s.optimize();
-console.log("serialize(q).maxLen: " + s.maxLen + " / " + s.BDDsize + " / " + s.instructionCount + " / " + s.labels.length + " labels");
-console.log("serialize(q).JSONlength: " + JSON.stringify(s).length );
+console.log("serialize(q).optimize():\n" + s.stats());
 
 // make (smaller) solution BDD with different variable ordering
 let map = {},
@@ -185,8 +182,6 @@ common.checkSolution(n, p);
 //gv.render(q);
 console.log("-----------------");
 let t = serialize(p).optimize();
-console.log("serialize(p).maxLen: " + t.maxLen + " / " + t.BDDsize + " / " + t.instructionCount + " / " + t.labels.length + " labels / JSONlength: " + JSON.stringify(t).length );
-console.log(t.toString());
-console.log("labelDeltas: [" + [...t.labelDeltas()].join(",") + "]");
-
+console.log("serialize(p).optimize():\n" + t.stats());
+//console.log(t.toString());
 

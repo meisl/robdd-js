@@ -45,11 +45,11 @@ const BDDser = require('../lib/BDD-serialization'),
     function check(title, p, s) {
         let actual,
             expected,
-            size   = p.size,
-            height = p.height,
-            info   = "size: " + p.size + ", height: " + p.height + " / " + title + " = " + p.toIteStr(),
-            lbls   = s.labels,
-            foobar = BDD.var('foobar');
+            size    = p.size,
+            height  = p.height,
+            bddInfo = "size: " + p.size + ", height: " + p.height + " / " + title + " = " + p.toIteStr(),
+            lbls    = s.labels,
+            foobar  = BDD.var('foobar');
 
         assert.throws( () => s.labelIdx(foobar), ".labelIdx on BDD " + util.inspect(p) + " with BDD with non-existent label / labels now: " + util.inspect(s.labels));
 
@@ -64,7 +64,7 @@ const BDDser = require('../lib/BDD-serialization'),
             actual = s.labelIdx(p);
             assert.same(actual, expected, "labelIdx((bdd '" + p.label + "', ...)");
         }
-        console.log(info + ":");
+        console.log(bddInfo + ":");
         let ls = RLE.init(...s.labelDeltas());
         console.log("labelDeltas:  (" + ls.encodedLength + "/" + ls.decodedLength + ") " + ls);
         let tgs = RLE.init(...s.targetSlots());
@@ -75,14 +75,24 @@ const BDDser = require('../lib/BDD-serialization'),
         console.log("  elseSlots:  (" + els.encodedLength + "/" + els.decodedLength + ") " + els);
 
         console.log(s.instructionCount + " instructions: " + s.instructions.join(','));
-        let jsonObj = s.toJSON();
-        let jsonTxt = JSON.stringify(s);
+        let stats   = s.stats(),
+            jsonObj = s.toJSON(),
+            jsonTxt = JSON.stringify(s);
         console.log(jsonTxt);
         console.log(s.toString());
-        console.log(info);
+        console.log(bddInfo);
+
+        assert.same(stats.maxLen,           s.maxLen,           "program.stats().maxLen === program.maxLen"                         + " for bdd of {" + bddInfo + "}\n");
+        assert.same(stats.instructionCount, s.instructionCount, "program.stats().instructionCount === program.instructionCount"     + " for bdd of {" + bddInfo + "}\n");
+        assert.same(stats.BDDsize,          s.BDDsize,          "program.stats().BDDsize === program.BDDsize"                       + " for bdd of {" + bddInfo + "}\n");
+        assert.same(stats.BDDheight,        s.BDDheight,        "program.stats().BDDheight === program.BDDheight"                   + " for bdd of {" + bddInfo + "}\n");
+        assert.same(stats.labelCount,       s.labels.length,    "program.stats().labelCount === program.labels.length"              + " for bdd of {" + bddInfo + "}\n");
+        assert.same(stats.JSONlength,       jsonTxt.length,     "program.stats().JSONlength === JSON.stringify(program).length"     + " for bdd of {" + bddInfo + "}\n");
+
         assert.same(jsonObj.maxLen,     s.maxLen,       "program.toJSON().maxLen === program.maxLen");
         assert.same(jsonObj.BDDsize,    s.BDDsize,      "program.toJSON().BDDsize === program.BDDsize");
         assert.same(jsonObj.BDDheight,  s.BDDheight,    "program.toJSON().BDDheight === program.BDDheight");
+
         assert.same(JSON.stringify(jsonObj), jsonTxt, "JSON.stringify(program.toJSON()) === JSON.stringify(program)");
 
         assert.same(s.BDDsize,   size,   ".BDDsize");
