@@ -42,7 +42,7 @@ const BDDser = require('../lib/BDD-serialization'),
         xs      = bitstr('x', bitLen),
         ys      = bitstr('y', bitLen);
 
-    function check(p, s) {
+    function check(title, p, s) {
         let actual,
             expected,
             size = p.size,
@@ -62,8 +62,7 @@ const BDDser = require('../lib/BDD-serialization'),
             actual = s.labelIdx(p);
             assert.same(actual, expected, "labelIdx((bdd '" + p.label + "', ...)");
         }
-        console.log("---------");
-        console.log(p.size + "/" + p.toIteStr() + ":");
+        console.log(p.size + "/" + title + " = " + p.toIteStr() + ":");
         let ls = RLE.init(...s.labelDeltas());
         console.log("labelDeltas:  (" + ls.encodedLength + "/" + ls.decodedLength + ") " + ls);
         let tgs = RLE.init(...s.targetSlots());
@@ -74,11 +73,11 @@ const BDDser = require('../lib/BDD-serialization'),
         console.log("  elseSlots:  (" + els.encodedLength + "/" + els.decodedLength + ") " + els);
 
         console.log(s.instructionCount + " instructions: " + s.instructions.join(','));
-        console.log(s.toString());
-        console.log(p.size + "/" + p.toIteStr());
-
         let json = JSON.stringify(s);
         console.log(json);
+        console.log(s.toString());
+        console.log(p.size + "/" + title + " = " + p.toIteStr());
+
         assert.same(s.BDDsize, size, ".BDDsize");
         assert(s.maxLen <= Math.max(2, s.BDDsize), ".maxLen should be lte max(.BDDsize, 2)");
 
@@ -87,31 +86,35 @@ const BDDser = require('../lib/BDD-serialization'),
         assert(actual <= expected, "should have " + expected + " or less instructions but has " + actual + ":\n" + util.inspect(s));
 
         assert.same(deserialize(s), p, s);
-        console.log(json);
-        assert.same(deserialize(json), p, "deserialize from JSON:\n" + json);
+        //assert.same(deserialize(json), p, "deserialize from JSON:\n" + json);
+        console.log("---------");
     }
 
+    //gv.render(xs.eq(ys));
+
     let testData = [
-        T, F,
-        a, b,
-        a.not, b.not,
-        and(a, b),
+        ["T"                   , T                      ],
+        ["F"                   , F                      ],
+        ["a"                   , a                      ],
+        ["b"                   , b                      ],
+        ["a.not"               , a.not                  ],
+        ["b.not"               , b.not                  ],
+        ["and(a, b)"           , and(a, b)              ],
 
-//        xor(a, b),
-        xs.eq(ys),
+        ["xor(a, b)"           , xor(a, b)              ],
+        ["xs.eq(ys)"           , xs.eq(ys)              ],
 
-        xs.neq(ys),
-        xs.lte(ys),
-        xs.eq(7),
-        ite(a, b, c),
-        ite(a, and(b, c), d),
-        ite(a, d, and(b, c)),
+        ["xs.neq(ys)"          , xs.neq(ys)             ],
+        ["xs.lte(ys)"          , xs.lte(ys)             ],
+        ["xs.eq(7)"            , xs.eq(7)               ],
+        ["ite(a, b, c)"        , ite(a, b, c)           ],
+        ["ite(a, and(b, c), d)", ite(a, and(b, c), d)   ],
+        ["ite(a, d, and(b, c))", ite(a, d, and(b, c))   ],
     ];
 
-    testData.forEach(bdd => check(bdd, serialize(bdd)));
+    testData.forEach(pair => ((title, bdd) => check(title, bdd, serialize(bdd)))(...pair));
     console.log("------------------------- optimized -------------------------");
-    testData.forEach(bdd => check(bdd, serialize(bdd).optimize()));
-    //gv.render(xs.lte(ys));
+    testData.forEach(pair => ((title, bdd) => check(title, bdd, serialize(bdd).optimize()))(...pair));
 }();
 
 
