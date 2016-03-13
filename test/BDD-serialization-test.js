@@ -45,8 +45,10 @@ const BDDser = require('../lib/BDD-serialization'),
     function check(title, p, s) {
         let actual,
             expected,
-            size = p.size,
-            lbls = s.labels,
+            size   = p.size,
+            height = p.height,
+            info   = "size: " + p.size + ", height: " + p.height + " / " + title + " = " + p.toIteStr(),
+            lbls   = s.labels,
             foobar = BDD.var('foobar');
 
         assert.throws( () => s.labelIdx(foobar), ".labelIdx on BDD " + util.inspect(p) + " with BDD with non-existent label / labels now: " + util.inspect(s.labels));
@@ -62,7 +64,7 @@ const BDDser = require('../lib/BDD-serialization'),
             actual = s.labelIdx(p);
             assert.same(actual, expected, "labelIdx((bdd '" + p.label + "', ...)");
         }
-        console.log(p.size + "/" + title + " = " + p.toIteStr() + ":");
+        console.log(info + ":");
         let ls = RLE.init(...s.labelDeltas());
         console.log("labelDeltas:  (" + ls.encodedLength + "/" + ls.decodedLength + ") " + ls);
         let tgs = RLE.init(...s.targetSlots());
@@ -73,12 +75,18 @@ const BDDser = require('../lib/BDD-serialization'),
         console.log("  elseSlots:  (" + els.encodedLength + "/" + els.decodedLength + ") " + els);
 
         console.log(s.instructionCount + " instructions: " + s.instructions.join(','));
-        let json = JSON.stringify(s);
-        console.log(json);
+        let jsonObj = s.toJSON();
+        let jsonTxt = JSON.stringify(s);
+        console.log(jsonTxt);
         console.log(s.toString());
-        console.log(p.size + "/" + title + " = " + p.toIteStr());
+        console.log(info);
+        assert.same(jsonObj.maxLen,     s.maxLen,       "program.toJSON().maxLen === program.maxLen");
+        assert.same(jsonObj.BDDsize,    s.BDDsize,      "program.toJSON().BDDsize === program.BDDsize");
+        assert.same(jsonObj.BDDheight,  s.BDDheight,    "program.toJSON().BDDheight === program.BDDheight");
+        assert.same(JSON.stringify(jsonObj), jsonTxt, "JSON.stringify(program.toJSON()) === JSON.stringify(program)");
 
-        assert.same(s.BDDsize, size, ".BDDsize");
+        assert.same(s.BDDsize,   size,   ".BDDsize");
+        assert.same(s.BDDheight, height, ".BDDheight");
         assert(s.maxLen <= Math.max(2, s.BDDsize), ".maxLen should be lte max(.BDDsize, 2)");
 
         expected = Math.max(0, size - 2);
@@ -86,7 +94,7 @@ const BDDser = require('../lib/BDD-serialization'),
         assert(actual <= expected, "should have " + expected + " or less instructions but has " + actual + ":\n" + util.inspect(s));
 
         assert.same(deserialize(s), p, s);
-        //assert.same(deserialize(json), p, "deserialize from JSON:\n" + json);
+        //assert.same(deserialize(jsonTxt), p, "deserialize from JSON (text):\n" + jsonTxt);
         console.log("---------");
     }
 
