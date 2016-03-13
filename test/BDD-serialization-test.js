@@ -97,7 +97,7 @@ const BDDser = require('../lib/BDD-serialization'),
         a.not, b.not,
         and(a, b),
 
-        xor(a, b),
+//        xor(a, b),
         xs.eq(ys),
 
         xs.neq(ys),
