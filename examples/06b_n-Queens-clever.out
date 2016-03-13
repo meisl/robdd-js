@@ -842,6 +842,7 @@
 serialize(q):
 { maxLen: 804,
   instructionCount: 802,
+  swapCount: 81,
   BDDsize: 883,
   BDDheight: 24,
   labelCount: 24,
@@ -850,6 +851,7 @@ pass 2...
 serialize(q).optimize():
 { maxLen: 47,
   instructionCount: 802,
+  swapCount: 81,
   BDDsize: 883,
   BDDheight: 24,
   labelCount: 24,
@@ -1475,9 +1477,10 @@ serialize(q).optimize():
 serialize(p).optimize():
 { maxLen: 41,
   instructionCount: 600,
+  swapCount: 68,
   BDDsize: 666,
   BDDheight: 24,
   labelCount: 24,
   JSONlength: 7622 }
 
-Output completed (17 sec consumed) - Normal Termination
+Output completed (18 sec consumed) - Normal Termination

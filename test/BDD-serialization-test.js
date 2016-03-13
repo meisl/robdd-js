@@ -82,8 +82,17 @@ const BDDser = require('../lib/BDD-serialization'),
         console.log(s.toString());
         console.log(bddInfo);
 
+        refute.same(s.maxLen,           undefined, "program.maxLen");
+        refute.same(s.instructionCount, undefined, "program.instructionCount");
+        refute.same(s.swapCount,        undefined, "program.swapCount");
+        refute.same(s.BDDsize,          undefined, "program.BDDsize");
+        refute.same(s.BDDheight,        undefined, "program.BDDheight");
+        refute.same(s.labelCount,       undefined, "program.labelCount");
+        assert.same(s.labelCount,       s.labels.length, "program.labelCount === program.labels.length");
+
         assert.same(stats.maxLen,           s.maxLen,           "program.stats().maxLen === program.maxLen"                         + " for bdd of {" + bddInfo + "}\n");
         assert.same(stats.instructionCount, s.instructionCount, "program.stats().instructionCount === program.instructionCount"     + " for bdd of {" + bddInfo + "}\n");
+        assert.same(stats.swapCount,        s.swapCount,        "program.stats().swapCount === program.swapCount"                   + " for bdd of {" + bddInfo + "}\n");
         assert.same(stats.BDDsize,          s.BDDsize,          "program.stats().BDDsize === program.BDDsize"                       + " for bdd of {" + bddInfo + "}\n");
         assert.same(stats.BDDheight,        s.BDDheight,        "program.stats().BDDheight === program.BDDheight"                   + " for bdd of {" + bddInfo + "}\n");
         assert.same(stats.labelCount,       s.labels.length,    "program.stats().labelCount === program.labels.length"              + " for bdd of {" + bddInfo + "}\n");
