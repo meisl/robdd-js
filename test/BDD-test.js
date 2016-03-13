@@ -138,6 +138,30 @@ refute.same(T, F, "BDD.True is different from BDD.False");
     */
 }();
 
+
+/* BDD.height */
+() => {
+    let a = BDD.var('a'),
+        b = BDD.var('b'),
+        c = BDD.var('c');
+    [
+        ["T"               , T               ,    0],
+        ["a"               , a               ,    1],
+        ["b"               , b               ,    1],
+        ["ite(a, b, T)"    , ite(a, b, T)    ,    2],
+        ["ite(a, b, F)"    , ite(a, b, F)    ,    2],
+        ["ite(a, b, b.not)", ite(a, b, b.not),    2],
+        ["a.xor(b.xor(c))" , a.xor(b.xor(c)) ,    3],
+    ].forEach(arr => {
+        let title  = arr[0],
+            bdd    = arr[1],
+            height = arr[2];
+        assert.same(bdd    .height, height, ".height of " + title);
+        assert.same(bdd.not.height, height, ".height of not(" + title + ")");
+    });
+}();
+
+
 /* BDD.size */
 () => {
     let a = BDD.var('a'),
