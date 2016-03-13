@@ -2,6 +2,7 @@
 
 const util   = require('util'),
       gv     = require('../lib/BDD-gv');
+const RLE = require('../lib/RLE');
 const pa     = require('pimped-assert'),
       assert = pa.assert,
       refute = pa.refute;
@@ -63,7 +64,15 @@ const BDDser = require('../lib/BDD-serialization'),
         }
         console.log("---------");
         console.log(p.size + "/" + p.toIteStr() + ":");
-        console.log("labelDeltas: [" + [...s.labelDeltas()].join(",") + "]");
+        let ls = RLE.init(...s.labelDeltas());
+        console.log("labelDeltas:  (" + ls.encodedLength + "/" + ls.decodedLength + ") " + ls);
+        let tgs = RLE.init(...s.targetSlots());
+        console.log("targetSlots:  (" + tgs.encodedLength + "/" + tgs.decodedLength + ") " + tgs);
+        let ths = RLE.init(...s.thenSlots());
+        console.log("  thenSlots:  (" + ths.encodedLength + "/" + ths.decodedLength + ") " + ths);
+        let els = RLE.init(...s.elseSlots());
+        console.log("  elseSlots:  (" + els.encodedLength + "/" + els.decodedLength + ") " + els);
+
         console.log(s.instructionCount + " instructions: " + s.instructions.join(','));
         console.log(s.toString());
         console.log(p.size + "/" + p.toIteStr());
@@ -77,7 +86,7 @@ const BDDser = require('../lib/BDD-serialization'),
         actual   = s.instructionCount;
         assert(actual <= expected, "should have " + expected + " or less instructions but has " + actual + ":\n" + util.inspect(s));
 
-        assert.same(deserialize(s), p, util.inspect(s));
+        assert.same(deserialize(s), p, s);
         console.log(json);
         assert.same(deserialize(json), p, "deserialize from JSON:\n" + json);
     }
@@ -87,8 +96,11 @@ const BDDser = require('../lib/BDD-serialization'),
         a, b,
         a.not, b.not,
         and(a, b),
+
         xor(a, b),
         xs.eq(ys),
+
+        xs.neq(ys),
         xs.lte(ys),
         xs.eq(7),
         ite(a, b, c),
