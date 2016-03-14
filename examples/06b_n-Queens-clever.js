@@ -1,5 +1,25 @@
 "use strict";
 
+((start) => {
+    process.on("exit", code => {
+        let now  = process.hrtime(),
+            prec = 100, // 10**2
+            time = Math.round((now[0] - start[0])*prec + (now[1] - start[1]) / (1e9/prec)) / prec;
+        console.log("\n" + "-".repeat(20) + "\nprocess.exit(" + code + "), time: " + time + " sec");
+    })
+})(process.hrtime());
+
+const fs              = require('fs'),
+      outName         = module.filename + ".out",
+      fileStream      = fs.createWriteStream(outName),
+      origStdoutWrite = process.stdout.write;
+
+process.stdout.write = function () {
+    fileStream.write(...arguments);
+    origStdoutWrite.call(process.stdout, ...arguments);
+};
+
+
 const util   = require('util'),
       assert = require('pimped-assert').assert;
 
@@ -24,6 +44,7 @@ const BDDser = require('../lib/BDD-serialization'),
       serialize   = BDDser.serialize,
       deserialize = BDDser.deserialize
 ;
+
 
 let n = 8,
     rank = common.makeRanks(n, { interleaved: false, MSBfirst: false }),

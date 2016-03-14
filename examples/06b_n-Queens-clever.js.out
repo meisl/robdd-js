@@ -1,4 +1,3 @@
----------- run node ----------
 8x8/d7: 2 moves, size(s): 16 = 8 + 8
   constraints: 39 formulas
   ~> 1 nodes, 1 satPaths, 0M calls
@@ -1483,4 +1482,5 @@ serialize(p).optimize():
   labelCount: 24,
   JSONlength: 7622 }
 
-Output completed (12 sec consumed) - Normal Termination
+--------------------
+process.exit(0), time: 11.14 sec
