@@ -46,7 +46,7 @@ const BDDser = require('../lib/BDD-serialization'),
 ;
 
 
-let n = 10,
+let n = 8,
     rank = common.makeRanks(n, { interleaved: false, MSBfirst: false }),
     bitLen = rank[0].length,
     p, q, r,
