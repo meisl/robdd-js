@@ -1,23 +1,42 @@
 "use strict";
 
-(() => {
+let fileStream = (() => {
     const start        = process.hrtime(),
           outName      = module.filename + ".out",
-          fileStream   = require('fs').createWriteStream(outName),
-          stdout_write = process.stdout.write;
+          util         = require('util'),
+          fs           = require('fs'),
+          stdout_write = process.stdout.write,
+          process_exit = process.exit;
+    let fileStream = fs.createWriteStream(outName, { flags: "w" }); // at start, open for writing
 
-    process.stdout.write = function () {
-        fileStream.write(...arguments);
+    fileStream.cork();
+
+    function stdout_write_wrapper() {
         stdout_write.call(process.stdout, ...arguments);
+        fileStream.write(...arguments);
+        let ws = fileStream._writableState;
+        if (ws.needDrain) {
+            fs.appendFileSync(outName, Buffer.concat(ws.getBuffer().map(writeReq => writeReq.chunk), ws.length));
+            //fileStream.end();
+            fileStream = fs.createWriteStream(outName, { flags: "a" }); // from now on append
+            fileStream.cork();
+        }
     };
 
     process.on("exit", code => {
-        let now  = process.hrtime(),
-            prec = 100, // 10**2
-            time = Math.round((now[0] - start[0])*prec + (now[1] - start[1]) / (1e9/prec)) / prec;
-        console.log("\n" + "-".repeat(20) + "\nexit code: " + code + ", time: " + time + " sec");
-    })
+        let now    = process.hrtime(),
+            prec   = 100, // 10**2
+            time   = Math.round((now[0] - start[0])*prec + (now[1] - start[1]) / (1e9/prec)) / prec,
+            endMsg = "\n" + "-".repeat(20) + "\nexit code: " + code + ", time: " + time + " sec";
+        console.log(endMsg);
+        process.stdout.write = stdout_write;
+        let ws = fileStream._writableState;
+        fs.appendFileSync(outName, Buffer.concat(ws.getBuffer().map(writeReq => writeReq.chunk), ws.length));
+    });
+
+    process.stdout.write = stdout_write_wrapper;
 }());
+
 
 
 const util   = require('util'),
@@ -111,6 +130,10 @@ console.log("pass 2...");
 s = s.optimize();
 console.log("serialize(q).optimize():\n" + s.stats());
 
+
+//process.exit();
+
+
 // make (smaller) solution BDD with different variable ordering
 let map = {},
     rankI = common.makeRanks(n, { interleaved: true, MSBfirst: true });
@@ -154,51 +177,47 @@ function csCmp(a, b) {
     return r;
 }
 
-let ds = new Array(q.satPathCount),
-    j  = 0,
-    m  = n * bitLen;
-for (let p of q.satPaths()) {
-    let cs = new Array(m),
-        i = 0;
-    for (let v of p()) {
-        let w = map[v.toString()];
-        cs[i++] = w;
+function rename_sat(q) {
+    let ds = new Array(q.satPathCount),
+        j  = 0;
+    for (let p of q.satPaths()) {
+        ds[j++] = and.apply(null, [...p()].map(v => map[v.toString()]));
     }
-    cs.sort(byLabelReverse);
-    let disjunct = cs[0];
-    for (i = 1; i < m; i++) {
-        let v = cs[i];
-        disjunct = and(v, disjunct);
-        //disjunct = v.onTrue === T ? BDD.get(v.label, disjunct, F) : BDD.get(v.label, F, disjunct);
-    }
-    ds[j++] = disjunct;
+    return or.apply(null, ds);
 }
 
-/*
-ds.sort(csCmp);
-for (let j = 0; j < ds.length; j++) {
-    let cs = ds[j];
-    if (j === 0) {
-        console.log("(and " + cs.join(" ") + ")");
-    }
-    //let disjunct = and.apply(null, cs);
-
-    let i        = 0,
-        disjunct = cs[i++];
-    while (i < m) {
-        let v = cs[i++];
-        disjunct = and(v, disjunct);
-        //disjunct = v.onTrue === T ? BDD.get(v.label, disjunct, F) : BDD.get(v.label, F, disjunct);
-    }
-    ds[j] = disjunct;
+function rename_ser() {
+    let k = 1000,
+        i = 0,
+        j = k,
+        start = process.hrtime(),
+        tm = 0,
+        result = s.run((label, thenChild, elseChild, t) => {
+            if (--j === 0) {
+                let now  = process.hrtime(),
+                    prec = 100, // 10**2
+                    time = Math.round((now[0] - start[0])*prec + (now[1] - start[1]) / (1e9/prec)) / prec;
+                i += k;
+                j = k;
+                console.log(i + " after " + time + " sec (" + (Math.round(t*prec) / prec) + " sec for src-ops)");
+            }
+            tm = t;
+            return ite(map[label], thenChild, elseChild);
+        });
+    let now  = process.hrtime(),
+        prec = 100, // 10**2
+        time = Math.round((now[0] - start[0])*prec + (now[1] - start[1]) / (1e9/prec)) / prec;
+    i += k - j;
+    console.log(i + " after " + time + " sec (" + (Math.round(tm*prec) / prec) + " sec for src-ops)");
+    return result;
 }
-*/
 
 console.log("----------------");
-p = or.apply(null, ds);
+p = rename_sat(q);    //rename_ser();   //
 console.log("  ~> " + p.size + " nodes, " + p.satPathCount + " satPaths, " + (Math.round(BDD.stats().calls.ttl/100000)/10) + "M calls");
 console.log(BDD.stats());
 common.checkSolution(n, p);
+
 
 //gv.render(q);
 console.log("-----------------");
