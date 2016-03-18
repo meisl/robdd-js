@@ -51,7 +51,7 @@ serialize(q):
   BDDsize: 10046,
   BDDheight: 40,
   labelCount: 40,
-  JSONlength: 170085 }
+  JSONlength: 20363 }
 pass 2...
 serialize(q).optimize():
 { maxLen: 270,
@@ -62,7 +62,7 @@ serialize(q).optimize():
   BDDsize: 10046,
   BDDheight: 40,
   labelCount: 40,
-  JSONlength: 143176 }
+  JSONlength: 20358 }
 ----------------
   ~> 8865 nodes, 724 satPaths, 9.8M calls
 { instCount: 92590,
@@ -90,7 +90,7 @@ serialize(p).optimize():
   BDDsize: 8865,
   BDDheight: 40,
   labelCount: 40,
-  JSONlength: 115976 }
+  JSONlength: 16438 }
 
 --------------------
-exit code: 0, time: 12.95 sec
+exit code: 0, time: 14.23 sec
