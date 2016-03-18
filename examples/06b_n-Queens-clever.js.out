@@ -43,38 +43,38 @@
   diff: [Function] }
 -----------------
 serialize(q):
-{ maxLen: 10032,
-  instructionCount: 10030,
-  swapCount: 0,
+{ maxLen: 9381,
+  instructionCount: 9379,
+  swapCount: 659,
   flipCount: 9,
-  flopCount: 0,
+  flopCount: 9,
   BDDsize: 10046,
   BDDheight: 40,
   labelCount: 40,
-  JSONlength: 20363 }
+  JSONlength: 19059 }
 pass 2...
 serialize(q).optimize():
 { maxLen: 270,
-  instructionCount: 10030,
-  swapCount: 0,
+  instructionCount: 9379,
+  swapCount: 659,
   flipCount: 9,
-  flopCount: 0,
+  flopCount: 9,
   BDDsize: 10046,
   BDDheight: 40,
   labelCount: 40,
-  JSONlength: 20358 }
+  JSONlength: 19056 }
 ----------------
-  ~> 8865 nodes, 724 satPaths, 9.8M calls
-{ instCount: 92590,
+  ~> 8865 nodes, 724 satPaths, 9.9M calls
+{ instCount: 127496,
   labelCount: 80,
   calls: 
-   { ttl: 9768644,
-     hlp: { ttl: 392405, get: 361073, size: 31332 },
+   { ttl: 9886639,
+     hlp: { ttl: 431255, get: 399923, size: 31332 },
      ops: 
-      { ttl: 9376239,
-        ite: 31292,
-        ite_short: 439,
-        not: 8697991,
+      { ttl: 9455384,
+        ite: 89566,
+        ite_short: 441,
+        not: 8718862,
         and: 642582,
         or: 362,
         eqv: 268,
@@ -82,15 +82,15 @@ serialize(q).optimize():
   diff: [Function] }
 -----------------
 serialize(p).optimize():
-{ maxLen: 285,
-  instructionCount: 8070,
-  swapCount: 0,
-  flipCount: 344,
-  flopCount: 0,
+{ maxLen: 281,
+  instructionCount: 7446,
+  swapCount: 644,
+  flipCount: 346,
+  flopCount: 326,
   BDDsize: 8865,
   BDDheight: 40,
   labelCount: 40,
-  JSONlength: 16438 }
+  JSONlength: 15190 }
 
 --------------------
-exit code: 0, time: 14.23 sec
+exit code: 0, time: 15.55 sec
