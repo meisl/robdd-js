@@ -93,4 +93,4 @@ serialize(p).optimize():
   JSONlength: 15190 }
 
 --------------------
-exit code: 0, time: 15.55 sec
+exit code: 0, time: 15.19 sec

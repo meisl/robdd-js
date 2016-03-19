@@ -124,7 +124,7 @@ try {
 console.log(BDD.stats());
 //gv.render(q);
 console.log("-----------------");
-let s = serialize(q);
+let s = serialize(q, { useSwap: true, useFlip: true, useFlop: true });
 console.log("serialize(q):\n" + s.stats());
 console.log("pass 2...");
 s = s.optimize();
@@ -221,7 +221,7 @@ common.checkSolution(n, p);
 
 //gv.render(q);
 console.log("-----------------");
-let t = serialize(p).optimize();
+let t = serialize(p, { useSwap: true, useFlip: true, useFlop: true }).optimize();
 console.log("serialize(p).optimize():\n" + t.stats());
 //console.log(t.toString());
 
