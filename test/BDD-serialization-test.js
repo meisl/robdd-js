@@ -37,7 +37,7 @@ const BDDser = require('../lib/BDD-serialization'),
 
 /* deserialize with label mapping (different ordering than in original) */
 () => {
-    let vars   = ["a", "b", "c", "d", "e", "f"].map(BDD.var),  // even nr of vars!
+    let vars   = ["a", "b", "c", "d", "e", "f", "g", "h"].map(BDD.var),  // even nr of vars!
         n      = vars.length,
         bitLen = n / 2,
         conj   = and.apply(null, vars),
@@ -55,7 +55,9 @@ const BDDser = require('../lib/BDD-serialization'),
     let good = T,
         bad  = T,
         g2b  = {},
-        b2g  = {};
+        b2g  = {},
+        goodS = [],
+        badS  = [];
     for (let i = 0; i < bitLen; i++) {
         good = and(good, eqv(goodA[i], goodB[i]));
         bad  = and(bad,  eqv(badA[i],  badB[i]));
@@ -63,11 +65,15 @@ const BDDser = require('../lib/BDD-serialization'),
         g2b[goodB[i].label] = badB[i].label;
         b2g[badA[i].label] = goodA[i].label;
         b2g[badB[i].label] = goodB[i].label;
+        goodS.push("(" + goodA[i] + " <-> " + goodB[i] + ")");
+        badS.push( "(" + badA[i]  + " <-> " + badB[i] + ")");
     }
+    goodS = goodS.join(" & ");
+    badS  = badS.join(" & ");
 
     console.log("vars:", vars);
-    console.log("good:", goodA, goodB, "~> " + good.toIteStr());
-    console.log(" bad:", badA,  badB,  "~> " + bad.toIteStr());
+    console.log("good:", goodA, goodB, "~> " + goodS + " / " + good.toIteStr());
+    console.log(" bad:", badA,  badB,  "~> " + badS + " / " + bad.toIteStr());
     console.log("g2b:", g2b);
     console.log("b2g:", b2g);
 
@@ -89,24 +95,24 @@ const BDDser = require('../lib/BDD-serialization'),
         useFlop:   [false, true],
         roundTrip: [false], // TODO: roundtrip
     }, opts => {
-        let goodS = serialize(good, opts),
-            badS  = serialize(bad,  opts);
+        let goodP = serialize(good, opts),
+            badP  = serialize(bad,  opts);
         if (opts.optimize) {
-            goodS = goodS.optimize();
-            badS  = badS.optimize();
+            goodP = goodP.optimize();
+            badP  = badP.optimize();
         }
         if (opts.roundTrip) {
-            goodS = BDDser.fromJSON(JSON.stringify(goodS));
-            badS = BDDser.fromJSON(JSON.stringify(badS));
+            goodP = BDDser.fromJSON(JSON.stringify(goodP));
+            badP = BDDser.fromJSON(JSON.stringify(badP));
         }
         // sanity (of tests)
         function msg1(what) {
-            return "\n" + goodS.toString() + "\n" + badS.toString()
+            return "\n" + goodP.toString() + "\n" + badP.toString()
                 + "\n" + "should have " + what;
         }
-        let flopCount = goodS.flopCount + badS.flopCount,
-            flipCount = goodS.flipCount + badS.flipCount - flopCount, // pure flips
-            swapCount = goodS.swapCount + badS.swapCount - flopCount; // pure swaps
+        let flopCount = goodP.flopCount + badP.flopCount,
+            flipCount = goodP.flipCount + badP.flipCount - flopCount, // pure flips
+            swapCount = goodP.swapCount + badP.swapCount - flopCount; // pure swaps
         if (opts.useSwap) {
             refute.same(swapCount, 0, msg1("at least one swap"));
         } else {
@@ -124,20 +130,20 @@ const BDDser = require('../lib/BDD-serialization'),
         }
 
 
-        let badFromGood = goodS.run((label, thenChild, elseChild) => BDD.get(g2b[label], thenChild, elseChild)),
-            goodFromBad = badS.run( (label, thenChild, elseChild) => BDD.get(b2g[label], thenChild, elseChild));
+        let badFromGood = goodP.run((label, thenChild, elseChild) => BDD.get(g2b[label], thenChild, elseChild)),
+            goodFromBad = badP.run( (label, thenChild, elseChild) => BDD.get(b2g[label], thenChild, elseChild));
 
         function msg2(a, x, program) {
             return "options: " + util.inspect(opts)
                 + "\n" + (BDD.isBDD(a) ? a.toIteStr() : util.inspect(a))
                 + "\n" + (BDD.isBDD(x) ? x.toIteStr() : util.inspect(x))
                 + "\n" + program.toString()
-                + "\n" + (program === goodS ? "bad from good under " + util.inspect(g2b) : "good from bad under " + util.inspect(g2b))
+                + "\n" + (program === goodP ? "bad from good under " + util.inspect(g2b) : "good from bad under " + util.inspect(g2b))
             ;
         }
 
-        assert.same(badFromGood, bad,  msg2(badFromGood, bad,  goodS));
-        assert.same(goodFromBad, good, msg2(goodFromBad, good, badS ));
+        assert.same(badFromGood, bad,  msg2(badFromGood, bad,  goodP));
+        assert.same(goodFromBad, good, msg2(goodFromBad, good, badP ));
 
     });
 
