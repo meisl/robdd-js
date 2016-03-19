@@ -21,6 +21,8 @@ const RLE = require('../lib/RLE');
         rle.add(x);
         added.push(x);
         assert.same(rle.decodedLength, added.length, ".decodedLength");
+        assert.same(rle.maxValue, Math.max(...added), ".maxValue");
+        assert.same(rle.minValue, Math.min(...added), ".minValue");
         assert.deepEqual([...rle.values()], added, util.inspect(rle.codes));
 
         let rle2;
@@ -129,6 +131,8 @@ const RLE = require('../lib/RLE');
 }();
 
 () => {
+    process.exit();
+
     let foo = RLE.inflateFromInts();
     //foo.pause();
 
