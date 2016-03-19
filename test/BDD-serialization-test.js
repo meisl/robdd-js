@@ -32,6 +32,120 @@ const BDDser = require('../lib/BDD-serialization'),
 // min:  {"maxLen":13,"BDDsize":47,"labels":["y3","y2","y1","y0","x3","x2","x1","x0"],"ts":[2,1,1,1,-5,6,1,1,-3,-3,6,1,-9,10,1,-2,-4,-2,6,-3,5,-2,-7,9,-11,12,-1,-2,-4,-1,3,-3,3,1,-1,-3,-1,3,-3,-1,-2,0,0,0,0],"code":[33554433,50397697,67240705,84083713,256,100728833,117573121,134416129,84149512,33620226,134349313,151193601,65792,167903233,184748545,151259403,84215049,50462979,151192321,100794630,184747521,151259403,33685762,184746497,131328,201523201,184814348,151324939,84280585,67305732,117637383,67372039,117637384,134414602,117704456,67437575,50528515,100860166,50594566,33751298,196864,262656,328448,394240,460032]}
 // max:  {"maxLen":13,"BDDsize":47,"labels":["y3","y2","y1","y0","x3","x2","x1","x0"],"ts":[2,1,1,1,-5,6,1,1,0,-3,-3,7,-9,10,1,0,0,-2,-1,-2,-3,5,-3,-2,-3,12,0,0,0,-1,-3,3,-3,2,0,1,-1,-1,1,-1,-1,1,1,1,1],"code":[33554433,50397697,67240705,84083713,256,100728833,117573121,134416129,134481160,83951874,33686785,151192065,65792,167903233,184748545,184813835,184879115,151126275,134416641,100794630,50529793,134481923,84017413,50529537,131328,201523201,201589516,201656332,201722636,184746244,134414599,184814344,134414594,167969034,168036362,184879882,167969033,151191814,168036873,151191813,134414592,151259400,168102409,184945418,201788427]}
 
+
+
+
+/* deserialize with label mapping (different ordering than in original) */
+() => {
+    let vars   = ["a", "b", "c", "d", "e", "f"].map(BDD.var),  // even nr of vars!
+        n      = vars.length,
+        bitLen = n / 2,
+        conj   = and.apply(null, vars),
+        goodA  = [],
+        goodB  = [],
+        badA   = [],
+        badB   = [];
+    // sort vars by label:
+    for (let p = conj, i = n; !p.isTerminal; p = p.onTrue) {
+        let v = BDD.var(p.label);
+        vars[--i] = v;
+        ((i % 2 === 0) ? goodA : goodB).unshift(v);
+        ((i < bitLen)  ? badA  : badB ).unshift(v);
+    }
+    let good = T,
+        bad  = T,
+        g2b  = {},
+        b2g  = {};
+    for (let i = 0; i < bitLen; i++) {
+        good = and(good, eqv(goodA[i], goodB[i]));
+        bad  = and(bad,  eqv(badA[i],  badB[i]));
+        g2b[goodA[i].label] = badA[i].label;
+        g2b[goodB[i].label] = badB[i].label;
+        b2g[badA[i].label] = goodA[i].label;
+        b2g[badB[i].label] = goodB[i].label;
+    }
+
+    console.log("vars:", vars);
+    console.log("good:", goodA, goodB, "~> " + good.toIteStr());
+    console.log(" bad:", badA,  badB,  "~> " + bad.toIteStr());
+    console.log("g2b:", g2b);
+    console.log("b2g:", b2g);
+
+    refute.same(good, bad);
+    assert(good.size < bad.size);
+
+    function forEachCombi(opts, f) {
+        for (let k of Object.keys(opts).reverse()) {
+            let g = cb => o => opts[k].forEach(v => { o[k] = v; cb(o); });
+            f = g(f);
+        }
+        f({});
+    }
+
+    forEachCombi({
+        optimize:  [false, true],
+        useSwap:   [false, true],
+        useFlip:   [false, true],
+        useFlop:   [false, true],
+        roundTrip: [false], // TODO: roundtrip
+    }, opts => {
+        let goodS = serialize(good, opts),
+            badS  = serialize(bad,  opts);
+        if (opts.optimize) {
+            goodS = goodS.optimize();
+            badS  = badS.optimize();
+        }
+        if (opts.roundTrip) {
+            goodS = BDDser.fromJSON(JSON.stringify(goodS));
+            badS = BDDser.fromJSON(JSON.stringify(badS));
+        }
+        // sanity (of tests)
+        function msg1(what) {
+            return "\n" + goodS.toString() + "\n" + badS.toString()
+                + "\n" + "should have " + what;
+        }
+        let flopCount = goodS.flopCount + badS.flopCount,
+            flipCount = goodS.flipCount + badS.flipCount - flopCount, // pure flips
+            swapCount = goodS.swapCount + badS.swapCount - flopCount; // pure swaps
+        if (opts.useSwap) {
+            refute.same(swapCount, 0, msg1("at least one swap"));
+        } else {
+            assert.same(swapCount, 0, msg1("NO swap"));
+        }
+        if (opts.useFlip) {
+            refute.same(flipCount, 0, msg1("at least one flip"));
+        } else {
+            assert.same(flipCount, 0, msg1("NO flip"));
+        }
+        if (opts.useFlop) {
+            refute.same(flopCount, 0, msg1("at least one flop"));
+        } else {
+            assert.same(flopCount, 0, msg1("NO flop"));
+        }
+
+
+        let badFromGood = goodS.run((label, thenChild, elseChild) => BDD.get(g2b[label], thenChild, elseChild)),
+            goodFromBad = badS.run( (label, thenChild, elseChild) => BDD.get(b2g[label], thenChild, elseChild));
+
+        function msg2(a, x, program) {
+            return "options: " + util.inspect(opts)
+                + "\n" + (BDD.isBDD(a) ? a.toIteStr() : util.inspect(a))
+                + "\n" + (BDD.isBDD(x) ? x.toIteStr() : util.inspect(x))
+                + "\n" + program.toString()
+                + "\n" + (program === goodS ? "bad from good under " + util.inspect(g2b) : "good from bad under " + util.inspect(g2b))
+            ;
+        }
+
+        assert.same(badFromGood, bad,  msg2(badFromGood, bad,  goodS));
+        assert.same(goodFromBad, good, msg2(goodFromBad, good, badS ));
+
+    });
+
+
+}();
+process.exit();
+
+/* */
 () => {
     let s, p,
         a       = BDD.var('a'),
