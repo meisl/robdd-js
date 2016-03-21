@@ -48,6 +48,11 @@ const RLE = require('../lib/RLE');
     assert.same(rle.encodedLength, 4, "encodedLength for rle(" + added.join(',') + ")");
     assert.deepEqual(roundtrip(rle), [ 1, [ 2, 2 ] ]);
 
+    added = [];
+    assert.same(rle.clear(), rle, ".clear() returns the RLE instance");
+    assert.same(rle.encodedLength, 0, "encodedLength for rle(" + added.join(',') + ")");
+    assert.same(rle.decodedLength, 0, "decodedLength for rle(" + added.join(',') + ")");
+    assert.deepEqual([...rle.values()], [], ".values() after .clear()");
 
     rle = RLE.init();
     added = [];
