@@ -223,7 +223,7 @@ common.checkSolution(n, p);
 console.log("-----------------");
 let t = serialize(p, { useSwap: true, useFlip: true, useFlop: true }).optimize();
 console.log("serialize(p).optimize():\n" + t.stats());
-console.log(JSON.stringify(t));
+//console.log(JSON.stringify(t));
 //console.log(t.toString());
 
 

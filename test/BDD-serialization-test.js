@@ -149,7 +149,7 @@ const BDDser = require('../lib/BDD-serialization'),
 
 
 }();
-process.exit();
+
 
 /* */
 () => {
