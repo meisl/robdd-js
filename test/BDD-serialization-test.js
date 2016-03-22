@@ -187,14 +187,12 @@ const BDDser = require('../lib/BDD-serialization'),
         console.log(bddInfo + ":");
         let ls = RLE.init(...s.labelDeltas());
         console.log("labelDeltas:  (" + ls.encodedLength + "/" + ls.decodedLength + ") " + ls);
-        let tgs = RLE.init(...s.targetSlots());
-        console.log("targetSlots:  (" + tgs.encodedLength + "/" + tgs.decodedLength + ") " + tgs);
         let ths = RLE.init(...s.thenSlots());
         console.log("  thenSlots:  (" + ths.encodedLength + "/" + ths.decodedLength + ") " + ths);
         let els = RLE.init(...s.elseSlots());
         console.log("  elseSlots:  (" + els.encodedLength + "/" + els.decodedLength + ") " + els);
 
-        console.log(s.instructionCount + " instructions: " + s.instructions.join(','));
+        console.log(s.instructionCount + " instructions ");
         let stats   = s.stats(),
             jsonObj = s.toJSON(),
             jsonTxt = JSON.stringify(s);
