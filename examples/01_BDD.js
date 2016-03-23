@@ -76,16 +76,16 @@ var b2 = BDD.var("b2");  var b2_ = BDD.var("b2'");
 var b3 = BDD.var("b3");  var b3_ = BDD.var("b3'");
 var b4 = BDD.var("b4");  var b4_ = BDD.var("b4'");
 p = b0.xor(b0_)
-    .and(b1.xor(b1_).eqv(b0.and(b0_.not())))
-    .and(b2.xor(b2_).eqv(b1.and(b1_.not())))
-    //.or(b2.and(b1).and(b0).and(b2_.and(b1_).and(b0_.not())))
-    //.and(b3.xor(b3_).eqv(b2.and(b2_.not())))
+    .and(b1.xor(b1_).eqv(b0.and(b0_.not)))
+    .and(b2.xor(b2_).eqv(b1.and(b1_.not)))
+    //.or(b2.and(b1).and(b0).and(b2_.and(b1_).and(b0_.not)))
+    //.and(b3.xor(b3_).eqv(b2.and(b2_.not)))
 /*
-    .and(b1.and(      b0).eqv(      b1_.not().and(b0_.not())))
-    .and(b1.not().and(b0).eqv(      b1_.and(      b0_.not())))
+    .and(b1.and(    b0).eqv(      b1_.not.and(b0_.not)))
+    .and(b1.not.and(b0).eqv(      b1_.and(    b0_.not)))
 
-    .and(b1.not().and(b0.not()).imp(b1_.not().and(b0_      )))
-    .and(b1.and(      b0.not()).imp(b1_.and(      b0_      )))
+    .and(b1.not.and(b0.not).imp(b1_.not.and(b0_      )))
+    .and(b1.and(    b0.not).imp(b1_.and(    b0_      )))
 */
 ;
 
@@ -100,15 +100,20 @@ p = bs.plus(bs).eq(bs_);  // excepts overflow (excludes wrap-around)
 //p = bs_.lt(bs);
 //p = b1.or(b1_).eqv(b1.and(b1_));
 
-const w = 2,
+const w = 4,    // must be a power of two
       h = 2,
-      bitLen = 4;
+      bitLen = 3;   // 2^bitLen must equal w*h
 var a1  = bitstr('a1_', bitLen),
     a2  = bitstr('a2_', bitLen),
     a3  = bitstr('a3_', bitLen);
 
-function no_overlap(a, b) {
-    return a.neq(b);
+function no_overlap() {
+    if (arguments.length < 2) {
+        return BDD.True
+    }
+    let head = arguments[0],
+        rest = Array.prototype.slice.call(arguments, 1);
+    return rest.reduce((acc, b) => acc.and(head.neq(b)), no_overlap.apply(this, rest));
 }
 
 function moves(as) {
@@ -116,75 +121,35 @@ function moves(as) {
         can_right = as.neq(w - 1).and(as.neq(w + w - 1));   // as % w < w - 2
     var left      = as.next.plus(1).eq(as),
         can_left  = as.neq(0).and(as.neq(w));
-    var down      = as.next.eq(as.plus(2)),
+    var down      = as.next.eq(as.plus(w)),
         can_down  = as.lt((h-1) * w);
-    var up        = as.next.plus(2).eq(as),
+    var up        = as.next.plus(w).eq(as),
         can_up    = as.gte(w);
 
-    return as.next.neq(as).and(
-            right.and(can_right)
-        .or(left.and( can_left ))
-        .or(down.and( can_down ))
-        .or(up.and(   can_up   ))
-    );
+    return   right.and(can_right)
+        .or( left.and( can_left ) )
+        .or( down.and( can_down ) )
+        .or( up.and(   can_up   ) )
+        //.or( as.next.eq(as)       )
+    ;
 }
 
 
-p =     moves(a1).and(a2.eq(a2.next))       //.and(a3.eq(a3.next))      //
-    .or(moves(a2).and(a1.eq(a1.next))   )   //.and(a3.eq(a3.next)))     //
-    //.or(moves(a3).and(a1.eq(a1.next)).and(a2.eq(a2.next)))
+p = BDD.True
     .and(
-             no_overlap(a1,      a2     )
-        .and(no_overlap(a1.next, a2.next))
-        //.and(no_overlap(a1,      a3     ))
-        //.and(no_overlap(a2,      a3     ))
-        //.and(no_overlap(a1.next, a3.next))
-        //.and(no_overlap(a3.next, a2.next))
+             moves(a1).and(a2.next.eq(a2)).and(a3.next.eq(a3))
+        .or( moves(a2).and(a1.next.eq(a1)).and(a3.next.eq(a3)) )
+        .or( moves(a3).and(a1.next.eq(a1)).and(a2.next.eq(a2)) )
+    ).and(
+              no_overlap(a1.next, a2.next, a3.next)
+        .and( no_overlap(a1, a2, a3)                )
     )
 ;
 
-
-function plusA(as, bs) {
-    var bitLen = bs.length,
-        sum    = new Array(bitLen),
-        carry  = BDD.False;
-    for (let i = 0, a, b; i < bitLen; i++) {
-        a = as[i];
-        b = bs[i];
-        sum[i] = carry.xor(a).xor(b);           // sum[i]    = 1  <=>  nr of 1s in {this[i], bs[i], carry} is odd
-        carry = carry.ite(a.or(b), a.and(b));   // carry-out = 1  <=>  nr of 1s in {this[i], bs[i], carry} is two or three
-    }
-    sum = bitstr.apply(null, sum);
-    return sum;
-}
-
-function plusB(as, bs) {
-    var bitLen = bs.length,
-        sum    = new Array(bitLen),
-        carry  = BDD.False;
-    for (let i = 0, a, b; i < bitLen; i++) {
-        a = as[i];
-        b = bs[i];
-        sum[i] = carry.ite(a.eqv(b), a.xor(b));           // sum[i]    = 1  <=>  nr of 1s in {this[i], bs[i], carry} is odd
-        carry = carry.ite(a.or(b), a.and(b));   // carry-out = 1  <=>  nr of 1s in {this[i], bs[i], carry} is two or three
-    }
-    sum = bitstr.apply(null, sum);
-    return sum;
-}
-
-
-
-
-var a1_plus_a2 = a1.plus(a2);
-
 console.log(BDD.stats());
-console.log('-----');
-console.log(BDD.statCompare(
-    () => p = a1_plus_a2.neq( a3),
-    () => p = a1_plus_a2.neq2(a3)
-));
-
 process.exit();
+
+
 g.node(p);
 
 function *fromBinary(bits, idx) {
@@ -290,8 +255,8 @@ function mkLabel2(n, extract) {
 
 //explicit_LTS(g, { a: as });
 var explStats;
-explStats = explicit_LTS(p, { a1: a1, a2: a2 });    //, mkLabel2);
-//explStats.addToGraph(g);
+explStats = explicit_LTS(p, { a1: a1, a2: a2, a3: a3 }, mkLabel2);
+explStats.addToGraph(g);
 console.log('size of transition rel.: ' + p.size);
 var BDDstats = BDD.stats();
 //console.log(BDDstats);
@@ -304,7 +269,7 @@ console.log('instances: ' + BDDstats.instCount
 console.log(explStats);
 
 
-process.exit();
+//process.exit();
 
 
 /* without no_overlap:
