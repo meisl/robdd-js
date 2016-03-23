@@ -69,18 +69,17 @@ function makeRanks(n, opts) {
         bitLen = bitLength(n);
     opts = opts || { interleaved: false, MSBfirst: false };
     for (let rank = 0; rank < n; rank++) {
-        let bits = [];
+        let bits = [],
+            k    = String.fromCharCode(65 + rank);
         for (let bitnr = 0; bitnr < bitLen; bitnr++) {
-            let i = opts.MSBfirst ? bitLen - 1 - bitnr : bitnr,
-                k = String.fromCharCode(65 + rank);
+            let i = opts.MSBfirst ? bitLen - 1 - bitnr : bitnr;
             if (opts.interleaved) {
-                bits.push(BDD.var(i + '' + k));
-
+                bits.push(BDD.var(i + k));
             } else {
-                bits.push(BDD.var(k + '' + i));
+                bits.push(BDD.var(k + i));
             }
         }
-        result[rank] = bitstr.apply(null, bits);
+        result[rank] = bitstr(...bits);
     }
     return result;
 }
