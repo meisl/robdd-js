@@ -177,6 +177,27 @@ const BitStr = require('../lib/BDD-bitstr'),
     assert.same(bits.neq(bits), F, "bitstr called with a str prefix; .neq(itself)");
 }();
 
+/* bitstr with str suffix */
+() => {
+    let suffix = 'a',
+        bits   = bitstr(4, suffix);
+
+    assert.typeof(bits[0], "object");
+
+    assert.same(bits.length, 4, "bitstr called with a str suffix; .length");
+    let i = 0;
+    bits.forEach(v => {
+        assert(v.isVar, "bitstr called with a str suffix yields a vector of variables; " + i + "th: " + v);
+        assert.same(v.label, i + suffix);
+        i++;
+    })
+    assert.same(i, bits.length, "'forEach-ing' through bitStr yields .length formulas");
+
+    // bitstr.eq/neq itself
+    assert.same(bits.eq( bits), T, "bitstr called with a str suffix; .eq(itself)");
+    assert.same(bits.neq(bits), F, "bitstr called with a str suffix; .neq(itself)");
+}();
+
 /* bitstr from BDDs */
 () => {
     const as1 = bitstr('a', 4),
