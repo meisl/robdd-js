@@ -137,16 +137,27 @@ const init = require('../lib/SlotAllocator').init;
                 i       = 0;
 
             function step(i0, reuse0, i1, reuse1) {
-                let a0 = got[i0 + n],
-                    a1 = got[i1 + n],
+            // ARRANGE
+                let a0 = got[i0 + n], // the slot we got from alloc at step #i0
+                    a1 = got[i1 + n], // the slot we got from alloc at step #i1
                     msg = "before " + (i+1) + "th get(...): ";
-                assert(usedS.has(a0), msg + "arg 0, " + a0 + " should be in usedS=" + util.inspect(usedS));
-                assert(usedS.has(a1), msg + "arg 1, " + a1 + " should be in usedS=" + util.inspect(usedS));
+           // ARRANGE/SANITY-CHECKS
+                // ensure that args are actually valid, ie: contained in usedS (this is a sanity check of the test arguments)
+                assert(usedS.has(a0), msg + "invalid test arg 0, " + a0 + " should be in usedS=" + util.inspect(usedS));
+                assert(usedS.has(a1), msg + "invalid test arg 1, " + a1 + " should be in usedS=" + util.inspect(usedS));
+                // ensure that everything in usableS, ie. everything that's NOT currently used is seen as invalid by alloc:
+                [...usableS].forEach(s => {
+                    assert.throws( () => alloc.get(s),
+                        "usable slot " + s + " should NOT be valid as arg; usable: " + util.inspect(usableS) + ", used: " + util.inspect(usedS));
+                });
                 // move reusable args from used to usable:
                 if (reuse0) { usedS.delete(a0); usableS.add(a0); }
                 if (reuse1) { usedS.delete(a1); usableS.add(a1); }
 
+            // ACT
                 let g = alloc.get(a0, reuse0, a1, reuse1);
+
+            // ASSERT
                 msg = "after " + (i+1) + "th get(...): ";
                 assert(usableS.has(g), msg + ".lastUsed=" + g + " should have been usable before = " + util.inspect(usableS));
                 assert(g < opts.maxLenLimit, msg + ".lastUsed=" + g + " should be less than maxLenLimit=" + opts.maxLenLimit);
@@ -159,6 +170,7 @@ const init = require('../lib/SlotAllocator').init;
                 assert.same(alloc.maxLen, maxLen, msg + ": .maxLen");
                 // assert.same(alloc.reusableCount, usable.size - 1, msg + " .reusableCount; usable=" + util.inspect(usableS))
 
+            // CLEAN-UP/ARRANGE FOR NEXT step
                 // remember that we got g at i-th step
                 got[i + n] = g;
                 i++;
