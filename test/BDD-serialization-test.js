@@ -33,7 +33,23 @@ const BDDser = require('../lib/BDD-serialization'),
 // max:  {"maxLen":13,"BDDsize":47,"labels":["y3","y2","y1","y0","x3","x2","x1","x0"],"ts":[2,1,1,1,-5,6,1,1,0,-3,-3,7,-9,10,1,0,0,-2,-1,-2,-3,5,-3,-2,-3,12,0,0,0,-1,-3,3,-3,2,0,1,-1,-1,1,-1,-1,1,1,1,1],"code":[33554433,50397697,67240705,84083713,256,100728833,117573121,134416129,134481160,83951874,33686785,151192065,65792,167903233,184748545,184813835,184879115,151126275,134416641,100794630,50529793,134481923,84017413,50529537,131328,201523201,201589516,201656332,201722636,184746244,134414599,184814344,134414594,167969034,168036362,184879882,167969033,151191814,168036873,151191813,134414592,151259400,168102409,184945418,201788427]}
 
 
-
+() => {
+    let a  = BDD.var('a'),
+        b  = BDD.var('b'),
+        c  = BDD.var('c'),
+        d  = BDD.var('d'),
+        x_plus_y_eq_z_BAD = bitstr('x', 4).plus(bitstr('y', 4)).eq(bitstr('z', 4)),
+        x  = bitstr(BDD.var('0x'), BDD.var('1x'), BDD.var('2x'), BDD.var('3x')),
+        y  = bitstr(BDD.var('0y'), BDD.var('1y'), BDD.var('2y'), BDD.var('3y')),
+        z  = bitstr(BDD.var('0z'), BDD.var('1z'), BDD.var('2z'), BDD.var('3z')),
+        x_plus_y_eq_z_GOOD = x.plus(y).eq(z),
+        p  = and( eqv(a, d), eqv(b, c) ),
+        q1 = or( and(a, b, c, d), and(a.not, b.not, d.not) ),
+        q2 = or( and(a.not, b, c, d), and(a, b.not, d.not) ),
+        s = serialize(x_plus_y_eq_z_GOOD).optimize();
+    //gv.render(x_plus_y_eq_z_GOOD);
+    process.exit();
+}();
 
 /* deserialize with label mapping (different ordering than in original) */
 () => {
