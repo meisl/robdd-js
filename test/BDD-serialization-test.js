@@ -38,15 +38,13 @@ const BDDser = require('../lib/BDD-serialization'),
         b  = BDD.var('b'),
         c  = BDD.var('c'),
         d  = BDD.var('d'),
-        x_plus_y_eq_z_BAD = bitstr('x', 4).plus(bitstr('y', 4)).eq(bitstr('z', 4)),
-        x  = bitstr(BDD.var('0x'), BDD.var('1x'), BDD.var('2x'), BDD.var('3x')),
-        y  = bitstr(BDD.var('0y'), BDD.var('1y'), BDD.var('2y'), BDD.var('3y')),
-        z  = bitstr(BDD.var('0z'), BDD.var('1z'), BDD.var('2z'), BDD.var('3z')),
-        x_plus_y_eq_z_GOOD = x.plus(y).eq(z),
+        bitLen = 8,
+        x_plus_y_eq_z_BAD  = bitstr('x', bitLen).plus(bitstr('y', bitLen)).eq(bitstr('z', bitLen)),
+        x_plus_y_eq_z_GOOD = bitstr(bitLen, 'x').plus(bitstr(bitLen, 'y')).eq(bitstr(bitLen, 'z')),
         p  = and( eqv(a, d), eqv(b, c) ),
         q1 = or( and(a, b, c, d), and(a.not, b.not, d.not) ),
         q2 = or( and(a.not, b, c, d), and(a, b.not, d.not) ),
-        s = serialize(x_plus_y_eq_z_GOOD).optimize();
+        s = serialize(x_plus_y_eq_z_BAD).optimize();
     //gv.render(x_plus_y_eq_z_GOOD);
     process.exit();
 }();
