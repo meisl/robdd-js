@@ -5,7 +5,8 @@ const util   = require('util'),
 const RLE = require('../lib/RLE');
 const pa     = require('pimped-assert'),
       assert = pa.assert,
-      refute = pa.refute;
+      refute = pa.refute,
+      forEachCombi = pa.forEachCombi;
 
 const BDD = require('../lib/BDD'),
       T      = BDD.True,
@@ -94,13 +95,6 @@ const BDDser = require('../lib/BDD-serialization'),
     refute.same(good, bad);
     assert(good.size < bad.size);
 
-    function forEachCombi(opts, f) {
-        for (let k of Object.keys(opts).reverse()) {
-            let g = cb => o => opts[k].forEach(v => { o[k] = v; cb(o); });
-            f = g(f);
-        }
-        f({});
-    }
 
     forEachCombi({
         optimize:  [false, true],

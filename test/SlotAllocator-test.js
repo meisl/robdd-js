@@ -3,7 +3,8 @@
 const util   = require('util');
 const pa     = require('pimped-assert'),
       assert = pa.assert,
-      refute = pa.refute;
+      refute = pa.refute,
+      forEachCombi = pa.forEachCombi;
 
 /* module under test: */
 const init = require('../lib/SlotAllocator').init;
@@ -127,6 +128,42 @@ const init = require('../lib/SlotAllocator').init;
 
 () => {
 
+    function testSrcValidityCheck(alloc, usedS, usableS) {
+        let usedArr = [...usedS], // we'll test .get(...) with up to 3 args
+            used1   = usedArr.length > 0 ? usedArr[0] : undefined,
+            used2   = usedArr.length > 1 ? usedArr[1] : undefined,
+            usableArr = [...usableS];
+        usableArr.length = Math.min(usableArr.length, 5); // limit nr of testcases
+        usableArr.forEach(s => {
+            let msg = "usable slot " + s + " should NOT be valid as arg; usable: " + util.inspect(usableS) + ", used: " + util.inspect(usedS),
+                args;
+            //console.log("src validity check: " + msg);
+            [true, false].forEach(reuse0 => {
+                args = [s, reuse0];
+                assert.throws( () => alloc.get(...args), msg );
+                if (used1 !== undefined) {
+                    [true, false].forEach(reuse1 => {
+                        args = [s, reuse0, used1, reuse1];
+                        assert.throws( () => alloc.get(...args), "get(" + args.join(", ") + ") ~> " + msg);
+                        args = [used1, reuse0, s, reuse1];
+                        //console.log("get(" + args.join(", ") + ") ~> " + msg);
+                        assert.throws( () => alloc.get(...args), "get(" + args.join(", ") + ") ~> " + msg);
+                        if (used2 !== undefined) {
+                            [true, false].forEach(reuse2 => {
+                                args = [s, reuse0, used1, reuse1, used2, reuse2];
+                                assert.throws( () => alloc.get(...args), "get(" + args.join(", ") + ") ~> " + msg);
+                                args = [used1, reuse0, s, reuse1, used2, reuse2];
+                                assert.throws( () => alloc.get(...args), "get(" + args.join(", ") + ") ~> " + msg);
+                                args = [used1, reuse0, used2, reuse1, s, reuse2];
+                                assert.throws( () => alloc.get(...args), "get(" + args.join(", ") + ") ~> " + msg);
+                            });
+                        }
+                    });
+                }
+            });
+        });
+    }
+
     let test = {
         init: (got, opts) => {
             let n       = got.length,
@@ -145,11 +182,10 @@ const init = require('../lib/SlotAllocator').init;
                 // ensure that args are actually valid, ie: contained in usedS (this is a sanity check of the test arguments)
                 assert(usedS.has(a0), msg + "invalid test arg 0, " + a0 + " should be in usedS=" + util.inspect(usedS));
                 assert(usedS.has(a1), msg + "invalid test arg 1, " + a1 + " should be in usedS=" + util.inspect(usedS));
-                // ensure that everything in usableS, ie. everything that's NOT currently used is seen as invalid by alloc:
-                [...usableS].forEach(s => {
-                    assert.throws( () => alloc.get(s),
-                        "usable slot " + s + " should NOT be valid as arg; usable: " + util.inspect(usableS) + ", used: " + util.inspect(usedS));
-                });
+
+                // ensure that everything in usableS - ie. everything that's NOT currently used - is seen as invalid by alloc:
+                testSrcValidityCheck(alloc, usedS, usableS);
+
                 // move reusable args from used to usable:
                 if (reuse0) { usedS.delete(a0); usableS.add(a0); }
                 if (reuse1) { usedS.delete(a1); usableS.add(a1); }
