@@ -192,6 +192,11 @@ const init = require('../lib/SlotAllocator').init;
                 if (reuse0) { usedS.delete(a0); usableS.add(a0); }
                 if (reuse1) { usedS.delete(a1); usableS.add(a1); }
 
+                if ((a0 === a1) && (reuse0 || reuse1)) {
+                    // let's see if alloc registers the same reusable only once:
+                    reuse0 = reuse1 = true;
+                }
+
             // ACT
                 let g = alloc.get(a0, reuse0, a1, reuse1);
 
@@ -206,7 +211,7 @@ const init = require('../lib/SlotAllocator').init;
                     usableS.add(++maxLen);
                 }
                 assert.same(alloc.maxLen, maxLen, msg + ": .maxLen");
-                // assert.same(alloc.reusableCount, usable.size - 1, msg + " .reusableCount; usable=" + util.inspect(usableS))
+                assert.same(alloc.reusableCount, usableS.size - 1, msg + " .reusableCount; usable=" + util.inspect(usableS))
 
             // CLEAN-UP/ARRANGE FOR NEXT step
                 // remember that we got g at i-th step
@@ -218,11 +223,30 @@ const init = require('../lib/SlotAllocator').init;
                 step: function () {
                     step(...arguments);
                     return testInstance;
-                }
+                },
+                inspect: function (cb) {
+                    let info = Object.assign({
+                        stepCount:  i,
+                        maxLen:     maxLen,
+                        usedS:      usedS,
+                        usableS:    usableS,
+                    }, opts);
+                    cb(alloc, info);
+                    return testInstance;
+                },
             };
             return testInstance;
         }
     };
+
+    let summary = (alloc, info) => console.log(
+        info.stepCount + " steps, maxLen: " + alloc.maxLen
+        + ", popCount: " + alloc.popCount
+        + " for " + JSON.stringify(info.title)
+    );
+
+    // uncomment to silence the thing:
+    //summary = () => {};
 
     test.init([0, 1], { maxLenLimit: 3, title: "or( and(a.not, b, c, d), and(a, b.not, d.not) )" })
         .step(-1, false, -2,  true)    // 0:  0 <- [0/+1],      1 ,      0  // maxParent:  2
@@ -230,7 +254,7 @@ const init = require('../lib/SlotAllocator').init;
         .step( 0,  true, -1, false)    // 2:  0 <- [2/+2], swap(0),      1  // maxParent:  3
         .step( 2,  true, -1,  true)    // 3:  1 <- [1/-1],      0 ,      1  // maxParent:  4
         .step( 1,  true,  3,  true)    // 4:  1 <- [3/+2],      2 ,      1  // maxParent:  Infinity
-    ;
+    .inspect(summary);
 
     test.init([0,1], { maxLenLimit: 3, title: "or( and(a, b, c, d), and(a.not, b.not, d.not) )" })
         .step(-2,  true, -1, false)    // 0:  0 <- [0/+1],      0 ,      1  // maxParent:  3
@@ -238,14 +262,14 @@ const init = require('../lib/SlotAllocator').init;
         .step( 1,  true, -1, false)    // 2:  2 <- [2/+1],      2 ,      1  // maxParent:  4
         .step(-1,  true,  0,  true)    // 3:  0 <- [2/+2],      1 , swap(0) // maxParent:  4
         .step( 2,  true,  3,  true)    // 4:  0 <- [3/+1],      2 ,      0  // maxParent:  Infinity
-    ;
+    .inspect(summary);
 
     test.init([0,1], { maxLenLimit: 2, title: "and( eqv(a, d), eqv(b, c) )" })
         .step(-2,  true, -1, false)    // 0:  0 <- [0/+1],      0 ,      1  // maxParent:  1
         .step( 0,  true, -1,  true)    // 1:  1 <- [1/+1],      0 ,      1  // maxParent:  2
         .step( 1,  true,  1, false)    // 2:  1 <- [2/+1],      1 , swap(1) // maxParent:  3
         .step( 2,  true,  2, false)    // 3:  1 <- [3/+1],      1 , flip(1) // maxParent:  Infinity
-    ;
+    .inspect(summary);
 
     test.init([0,1], { maxLenLimit: 2, title: "4-Queens" })
         .step( -2,  true,  -1, false)    //  0:   0 <- [ 0/+1],       0 ,       1  // maxParent:  1
@@ -256,7 +280,7 @@ const init = require('../lib/SlotAllocator').init;
         .step(  4,  true,  -1, false)    //  5:   0 <- [ 5/+1],       0 ,       1  // maxParent:  6
         .step( -1,  true,   5,  true)    //  6:   0 <- [ 6/+1],       1 ,       0  // maxParent:  7
         .step(  6,  true,   6, false)    //  7:   0 <- [ 7/+1],       0 , flip( 0) // maxParent:  Infinity
-    ;
+    .inspect(summary);
 
     test.init([0,1], { maxLenLimit: 9, title: "5-Queens" })
         .step( -2,  true,  -1, false)    //  0:   0 <- [ 0/+1],       0 ,       1  // maxParent:  1
@@ -318,7 +342,7 @@ const init = require('../lib/SlotAllocator').init;
         .step( 44,  true,  55,  true)    // 56:   1 <- [12/+1],       4 ,       1  // maxParent:  57
         .step( 32,  true,  56,  true)    // 57:   1 <- [13/+1],       8 ,       1  // maxParent:  58
         .step( 16,  true,  57,  true)    // 58:   1 <- [14/+1],       5 ,       1  // maxParent:  Infinity
-    ;
+    .inspect(summary);
 
     test.init([0,1], { maxLenLimit: 3, title: "4-bit-addition (GOOD variable ordering, height 12, size 32): bitstr(4, 'x').plus(bitstr(4, 'y')).eq(bitstr(4, 'z'))" })
         .step( -2,  true,  -1, false)    //  0:   0 <- [ 0/+1],       0 ,       1  // maxParent:  1
@@ -336,7 +360,7 @@ const init = require('../lib/SlotAllocator').init;
         .step( 11, false,  11, false)    // 12:   1 <- [10/+1],       0 , flip( 0) // maxParent:  14
         .step( 11,  true,  11, false)    // 13:   0 <- [10/+1], flip( 0), flip( 0) // maxParent:  14
         .step( 12,  true,  13,  true)    // 14:   0 <- [11/+1],       1 ,       0  // maxParent:  Infinity
-    ;
+    .inspect(summary);
 
     test.init([0,1], { maxLenLimit: 3, title: "8-bit-addition (GOOD variable ordering, height 24, size 68): bitstr(8, 'x').plus(bitstr(8, 'y')).eq(bitstr(8, 'z'))" })
         .step( -2,  true,  -1, false)    //  0:   0 <- [ 0/+1],       0 ,       1  // maxParent:  1
@@ -370,7 +394,7 @@ const init = require('../lib/SlotAllocator').init;
         .step( 27, false,  27, false)    // 28:   1 <- [22/+1],       0 , flip( 0) // maxParent:  30
         .step( 27,  true,  27, false)    // 29:   0 <- [22/+1], flip( 0), flip( 0) // maxParent:  30
         .step( 28,  true,  29,  true)    // 30:   0 <- [23/+1],       1 ,       0  // maxParent:  Infinity
-    ;
+    .inspect(summary);
 
     test.init([0,1], { maxLenLimit: 12, title: "4-bit-addition (BAD variable ordering, height 12, size 111): bitstr('x', 4).plus(bitstr('y', 4)).eq(bitstr('z', 4))" })
         .step( -2,  true,  -1, false)    //   0:    0 <- [ 0/+1],        0 ,        1  // maxParent:  1
@@ -421,7 +445,7 @@ const init = require('../lib/SlotAllocator').init;
         .step( 41,  true,  44,  true)    //  45:    2 <- [ 9/+1],        3 ,        2  // maxParent:  46
         .step( 39,  true,  45,  true)    //  46:    2 <- [10/+1],       10 ,        2  // maxParent:  47
         .step( 35,  true,  46,  true)    //  47:    2 <- [11/+1],        8 ,        2  // maxParent:  Infinity
-    ;
+    .inspect(summary);
 
     test.init([0,1], { maxLenLimit: 252, title: "8-bit-addition (BAD variable ordering, height 24, size 2815): bitstr('x', 8).plus(bitstr('y', 8)).eq(bitstr('z', 8))" })
         .step(   -2,  true,    -1, false)    //    0:     0 <- [ 0/+1],         0 ,         1  // maxParent:  1
@@ -1648,7 +1672,7 @@ const init = require('../lib/SlotAllocator').init;
         .step( 1183,  true,  1220,  true)    // 1221:     6 <- [21/+1],        48 ,         6  // maxParent:  1222
         .step( 1151,  true,  1221,  true)    // 1222:     6 <- [22/+1],        75 ,         6  // maxParent:  1223
         .step( 1087,  true,  1222,  true)    // 1223:     6 <- [23/+1],       128 ,         6  // maxParent:  Infinity
-    ;
+    .inspect(summary);
 
 }();
 
