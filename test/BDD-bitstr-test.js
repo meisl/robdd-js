@@ -198,7 +198,28 @@ const BitStr = require('../lib/BDD-bitstr'),
     assert.same(bits.neq(bits), F, "bitstr called with a str suffix; .neq(itself)");
 }();
 
-/* bitstr from BDDs */
+/* bitstr from BDDs (2, which overlaps with the other two-arg overloads of fn bitstr) */
+() => {
+    const as1 = bitstr('a', 2),
+          as2 = bitstr(as1[0], as1[1]),
+          asR = bitstr(as1[1], as1[0]);
+    assert.same(as1.eq( as2), T, "bitstr with same vars in same order are eq = T (1)");
+    assert.same(as2.eq( as1), T, "bitstr with same vars in same order are eq = T (2)");
+    assert.same(as1.neq(as2), F, "bitstr with same vars in same order are neq = F (1)");
+    assert.same(as2.neq(as1), F, "bitstr with same vars in same order are neq = F (1)");
+
+    let as1EQasR = as1[0].eqv(asR[0])
+              .and(as1[1].eqv(asR[1]))
+    ;
+    assert.same(as1.eq(asR), as1EQasR, "bitstr with same vars but in different order / eq");
+
+    let as1NEQasR = as1[0].xor(asR[0])
+                .or(as1[1].xor(asR[1]))
+    ;
+    assert.same(as1.eq(asR), as1EQasR, "bitstr with same vars but in different order / eq");
+}();
+
+/* bitstr from BDDs (4) */
 () => {
     const as1 = bitstr('a', 4),
           as2 = bitstr(as1[0], as1[1], as1[2], as1[3]),
