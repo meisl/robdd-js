@@ -33,7 +33,7 @@ const BDDser = require('../lib/BDD-serialization'),
 // min:  {"maxLen":13,"BDDsize":47,"labels":["y3","y2","y1","y0","x3","x2","x1","x0"],"ts":[2,1,1,1,-5,6,1,1,-3,-3,6,1,-9,10,1,-2,-4,-2,6,-3,5,-2,-7,9,-11,12,-1,-2,-4,-1,3,-3,3,1,-1,-3,-1,3,-3,-1,-2,0,0,0,0],"code":[33554433,50397697,67240705,84083713,256,100728833,117573121,134416129,84149512,33620226,134349313,151193601,65792,167903233,184748545,151259403,84215049,50462979,151192321,100794630,184747521,151259403,33685762,184746497,131328,201523201,184814348,151324939,84280585,67305732,117637383,67372039,117637384,134414602,117704456,67437575,50528515,100860166,50594566,33751298,196864,262656,328448,394240,460032]}
 // max:  {"maxLen":13,"BDDsize":47,"labels":["y3","y2","y1","y0","x3","x2","x1","x0"],"ts":[2,1,1,1,-5,6,1,1,0,-3,-3,7,-9,10,1,0,0,-2,-1,-2,-3,5,-3,-2,-3,12,0,0,0,-1,-3,3,-3,2,0,1,-1,-1,1,-1,-1,1,1,1,1],"code":[33554433,50397697,67240705,84083713,256,100728833,117573121,134416129,134481160,83951874,33686785,151192065,65792,167903233,184748545,184813835,184879115,151126275,134416641,100794630,50529793,134481923,84017413,50529537,131328,201523201,201589516,201656332,201722636,184746244,134414599,184814344,134414594,167969034,168036362,184879882,167969033,151191814,168036873,151191813,134414592,151259400,168102409,184945418,201788427]}
 
-
+/*
 () => {
     let a  = BDD.var('a'),
         b  = BDD.var('b'),
@@ -47,8 +47,8 @@ const BDDser = require('../lib/BDD-serialization'),
         q2 = or( and(a.not, b, c, d), and(a, b.not, d.not) ),
         s = serialize(x_plus_y_eq_z_BAD).optimize();
     //gv.render(x_plus_y_eq_z_GOOD);
-    process.exit();
 }();
+*/
 
 /* deserialize with label mapping (different ordering than in original) */
 () => {
@@ -101,7 +101,7 @@ const BDDser = require('../lib/BDD-serialization'),
         useSwap:   [false, true],
         useFlip:   [false, true],
         useFlop:   [false, true],
-        roundTrip: [false], // TODO: roundtrip
+        roundTrip: [false, true],
     }, opts => {
         let goodP = serialize(good, opts),
             badP  = serialize(bad,  opts);
@@ -113,6 +113,7 @@ const BDDser = require('../lib/BDD-serialization'),
             goodP = BDDser.fromJSON(JSON.stringify(goodP));
             badP = BDDser.fromJSON(JSON.stringify(badP));
         }
+
         // sanity (of tests)
         function msg1(what) {
             return "\n" + goodP.toString() + "\n" + badP.toString()
@@ -243,7 +244,7 @@ const BDDser = require('../lib/BDD-serialization'),
         assert(actual <= expected, "should have " + expected + " or less instructions but has " + actual + ":\n" + util.inspect(s));
 
         assert.same(deserialize(s), p, s);
-        //assert.same(deserialize(jsonTxt), p, "deserialize from JSON (text):\n" + jsonTxt);
+        assert.same(deserialize(jsonTxt), p, "deserialize from JSON (text):\n" + jsonTxt);
         console.log("---------");
     }
 

@@ -44,14 +44,14 @@
 -----------------
 serialize(q):
 { maxLen: 9381,
+  labelCount: 40,
   instructionCount: 9379,
   swapCount: 659,
   flipCount: 9,
   flopCount: 9,
-  BDDsize: 10046,
   BDDheight: 40,
-  labelCount: 40,
-  JSONlength: 75477,
+  BDDsize: 10046,
+  JSONlength: 75475,
   bitsPerNode: 60.1,
   labelDeltasPct: 0,
   thenSlotsPct: 87.6,
@@ -59,13 +59,13 @@ serialize(q):
 pass 2...
 serialize(q).optimize():
 { maxLen: 270,
+  labelCount: 40,
   instructionCount: 9379,
   swapCount: 659,
   flipCount: 9,
   flopCount: 9,
-  BDDsize: 10046,
   BDDheight: 40,
-  labelCount: 40,
+  BDDsize: 10046,
   JSONlength: 52371,
   bitsPerNode: 41.7,
   labelDeltasPct: 0,
@@ -91,13 +91,13 @@ serialize(q).optimize():
 -----------------
 serialize(p).optimize():
 { maxLen: 281,
+  labelCount: 40,
   instructionCount: 7446,
   swapCount: 644,
   flipCount: 346,
   flopCount: 326,
-  BDDsize: 8865,
   BDDheight: 40,
-  labelCount: 40,
+  BDDsize: 8865,
   JSONlength: 45471,
   bitsPerNode: 41,
   labelDeltasPct: 0,
@@ -105,4 +105,4 @@ serialize(p).optimize():
   elseSlotsPct: 92.9 }
 
 --------------------
-exit code: 0, time: 14.43 sec
+exit code: 0, time: 15.06 sec
