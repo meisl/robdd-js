@@ -213,6 +213,12 @@ const init = require('../lib/SlotAllocator').init;
                 assert.same(alloc.maxLen, maxLen, msg + ": .maxLen");
                 assert.same(alloc.reusableCount, usableS.size - 1, msg + " .reusableCount; usable=" + util.inspect(usableS))
 
+                msg = "";
+                for (let j = 0; j < maxLen; j++) {
+                    msg += usableS.has(j) ? "1" : (g === j ? "*" : "_");
+                }
+                //console.log("  " + alloc.popCount + " " + msg);
+
             // CLEAN-UP/ARRANGE FOR NEXT step
                 // remember that we got g at i-th step
                 got[i + n] = g;
@@ -271,7 +277,7 @@ const init = require('../lib/SlotAllocator').init;
         .step( 2,  true,  2, false)    // 3:  1 <- [3/+1],      1 , flip(1) // maxParent:  Infinity
     .inspect(summary);
 
-    test.init([0,1], { maxLenLimit: 2, title: "4-Queens" })
+    test.init([0,1], { maxLenLimit: 2, title: "4-Queens (height 8, size 17)" })
         .step( -2,  true,  -1, false)    //  0:   0 <- [ 0/+1],       0 ,       1  // maxParent:  1
         .step(  0,  true,  -1, false)    //  1:   0 <- [ 1/+1],       0 ,       1  // maxParent:  2
         .step( -1, false,   1,  true)    //  2:   0 <- [ 2/+1],       1 ,       0  // maxParent:  3
@@ -282,7 +288,7 @@ const init = require('../lib/SlotAllocator').init;
         .step(  6,  true,   6, false)    //  7:   0 <- [ 7/+1],       0 , flip( 0) // maxParent:  Infinity
     .inspect(summary);
 
-    test.init([0,1], { maxLenLimit: 9, title: "5-Queens" })
+    test.init([0,1], { maxLenLimit: 9, title: "5-Queens (height 15, size 76" })
         .step( -2,  true,  -1, false)    //  0:   0 <- [ 0/+1],       0 ,       1  // maxParent:  1
         .step(  0,  true,  -1, false)    //  1:   0 <- [ 1/+1],       0 ,       1  // maxParent:  17
         .step( -1, false,   1, false)    //  2:   2 <- [ 2/+1],       1 ,       0  // maxParent:  33
@@ -342,6 +348,355 @@ const init = require('../lib/SlotAllocator').init;
         .step( 44,  true,  55,  true)    // 56:   1 <- [12/+1],       4 ,       1  // maxParent:  57
         .step( 32,  true,  56,  true)    // 57:   1 <- [13/+1],       8 ,       1  // maxParent:  58
         .step( 16,  true,  57,  true)    // 58:   1 <- [14/+1],       5 ,       1  // maxParent:  Infinity
+    .inspect(summary);
+
+    test.init([0,1], { maxLenLimit: 5, title: "6-Queens (height 18, size 64)" })
+        .step( -2,  true,  -1, false)    //  0:   0 <- [ 0/+1],       0 ,       1  // maxParent:  1
+        .step(  0,  true,  -1, false)    //  1:   0 <- [ 1/+1],       0 ,       1  // maxParent:  17
+        .step(  1, false,  -1, false)    //  2:   2 <- [ 2/+1],       0 ,       1  // maxParent:  3
+        .step( -1, false,   2,  true)    //  3:   2 <- [ 3/+1],       1 ,       2  // maxParent:  4
+        .step( -1, false,   3,  true)    //  4:   2 <- [ 4/+1],       1 ,       2  // maxParent:  5
+        .step( -1, false,   4,  true)    //  5:   2 <- [ 5/+1],       1 ,       2  // maxParent:  6
+        .step( -1, false,   5,  true)    //  6:   2 <- [ 6/+1],       1 ,       2  // maxParent:  37
+        .step(  6, false,  -1, false)    //  7:   3 <- [ 7/+1],       2 ,       1  // maxParent:  8
+        .step( -1, false,   7,  true)    //  8:   3 <- [ 8/+1],       1 ,       3  // maxParent:  9
+        .step( -1, false,   8,  true)    //  9:   3 <- [ 9/+1],       1 ,       3  // maxParent:  10
+        .step(  9,  true,  -1, false)    // 10:   3 <- [10/+1],       3 ,       1  // maxParent:  11
+        .step( -1, false,  10,  true)    // 11:   3 <- [11/+1],       1 ,       3  // maxParent:  12
+        .step( -1, false,  11,  true)    // 12:   3 <- [12/+1],       1 ,       3  // maxParent:  13
+        .step( -1, false,  12,  true)    // 13:   3 <- [13/+1],       1 ,       3  // maxParent:  14
+        .step( 13,  true,  -1, false)    // 14:   3 <- [14/+1],       3 ,       1  // maxParent:  15
+        .step( -1, false,  14,  true)    // 15:   3 <- [15/+1],       1 ,       3  // maxParent:  16
+        .step( -1, false,  15,  true)    // 16:   3 <- [16/+1],       1 ,       3  // maxParent:  47
+        .step( -1, false,   1,  true)    // 17:   0 <- [ 2/+1],       1 , swap( 0) // maxParent:  18
+        .step( 17,  true,  -1, false)    // 18:   0 <- [ 3/+1],       0 ,       1  // maxParent:  19
+        .step( 18,  true,  -1, false)    // 19:   0 <- [ 4/+1],       0 ,       1  // maxParent:  20
+        .step( -1, false,  19,  true)    // 20:   0 <- [ 5/+1],       1 ,       0  // maxParent:  21
+        .step( 20,  true,  -1, false)    // 21:   0 <- [ 6/+1],       0 ,       1  // maxParent:  31
+        .step( -1, false,  21, false)    // 22:   4 <- [ 7/+1],       1 ,       0  // maxParent:  23
+        .step( -1, false,  22,  true)    // 23:   4 <- [ 8/+1],       1 ,       4  // maxParent:  24
+        .step( -1, false,  23,  true)    // 24:   4 <- [ 9/+1],       1 ,       4  // maxParent:  25
+        .step( -1, false,  24,  true)    // 25:   4 <- [10/+1],       1 ,       4  // maxParent:  26
+        .step( 25,  true,  -1, false)    // 26:   4 <- [11/+1],       4 ,       1  // maxParent:  27
+        .step( -1, false,  26,  true)    // 27:   4 <- [12/+1],       1 ,       4  // maxParent:  28
+        .step( -1, false,  27,  true)    // 28:   4 <- [13/+1],       1 ,       4  // maxParent:  29
+        .step( 28,  true,  -1, false)    // 29:   4 <- [14/+1],       4 ,       1  // maxParent:  30
+        .step( -1, false,  29,  true)    // 30:   4 <- [15/+1],       1 ,       4  // maxParent:  46
+        .step( -1, false,  21,  true)    // 31:   0 <- [ 7/+1],       1 , flop( 0) // maxParent:  32
+        .step( -1, false,  31,  true)    // 32:   0 <- [ 8/+1],       1 ,       0  // maxParent:  33
+        .step( -1, false,  32,  true)    // 33:   0 <- [ 9/+1],       1 ,       0  // maxParent:  34
+        .step( -1, false,  33,  true)    // 34:   0 <- [10/+1],       1 ,       0  // maxParent:  35
+        .step( 34,  true,  -1, false)    // 35:   0 <- [11/+1],       0 ,       1  // maxParent:  36
+        .step( -1, false,  35,  true)    // 36:   0 <- [12/+1],       1 ,       0  // maxParent:  43
+        .step(  6,  true,  -1, false)    // 37:   2 <- [ 7/+1], flop( 2),       1  // maxParent:  38
+        .step( -1, false,  37,  true)    // 38:   2 <- [ 8/+1],       1 ,       2  // maxParent:  39
+        .step( -1, false,  38,  true)    // 39:   2 <- [ 9/+1],       1 ,       2  // maxParent:  40
+        .step( 39,  true,  -1, false)    // 40:   2 <- [10/+1],       2 ,       1  // maxParent:  41
+        .step( -1, false,  40,  true)    // 41:   2 <- [11/+1],       1 ,       2  // maxParent:  42
+        .step( 41,  true,  -1, false)    // 42:   2 <- [12/+1],       2 ,       1  // maxParent:  43
+        .step( 36,  true,  42,  true)    // 43:   2 <- [13/+1],       0 ,       2  // maxParent:  44
+        .step( -1, false,  43,  true)    // 44:   2 <- [14/+1],       1 ,       2  // maxParent:  45
+        .step( 44,  true,  -1,  true)    // 45:   1 <- [15/+1],       2 ,       1  // maxParent:  46
+        .step( 30,  true,  45,  true)    // 46:   1 <- [16/+1],       4 ,       1  // maxParent:  47
+        .step( 16,  true,  46,  true)    // 47:   1 <- [17/+1],       3 ,       1  // maxParent:  Infinity
+    .inspect(summary);
+
+    test.init([0,1], { maxLenLimit: 24, title: "7-Queens (height 21, size 351)" })
+        .step(  -2,  true,   -1, false)    //   0:    0 <- [ 0/+1],        0 ,        1  // maxParent:  1
+        .step(  -1, false,    0,  true)    //   1:    0 <- [ 1/+1],        1 ,        0  // maxParent:  17
+        .step(  -1, false,    1, false)    //   2:    2 <- [ 2/+1],        1 ,        0  // maxParent:  58
+        .step(   2, false,   -1, false)    //   3:    3 <- [ 3/+1],        2 ,        1  // maxParent:  76
+        .step(   3, false,   -1, false)    //   4:    4 <- [ 4/+1],        3 ,        1  // maxParent:  71
+        .step(  -1, false,    4, false)    //   5:    5 <- [ 5/+1],        1 ,        4  // maxParent:  6
+        .step(  -1, false,    5,  true)    //   6:    5 <- [ 6/+1],        1 ,        5  // maxParent:  115
+        .step(   6, false,   -1, false)    //   7:    6 <- [ 7/+1],        5 ,        1  // maxParent:  8
+        .step(  -1, false,    7,  true)    //   8:    6 <- [ 8/+1],        1 ,        6  // maxParent:  193
+        .step(   8, false,   -1, false)    //   9:    7 <- [ 9/+1],        6 ,        1  // maxParent:  55
+        .step(  -1, false,    9, false)    //  10:    8 <- [10/+1],        1 ,        7  // maxParent:  11
+        .step(  -1, false,   10,  true)    //  11:    8 <- [11/+1],        1 ,        8  // maxParent:  12
+        .step(  11,  true,   -1, false)    //  12:    8 <- [12/+1],        8 ,        1  // maxParent:  13
+        .step(  -1, false,   12,  true)    //  13:    8 <- [13/+1],        1 ,        8  // maxParent:  14
+        .step(  -1, false,   13,  true)    //  14:    8 <- [14/+1],        1 ,        8  // maxParent:  15
+        .step(  -1, false,   14,  true)    //  15:    8 <- [15/+1],        1 ,        8  // maxParent:  16
+        .step(  -1, false,   15,  true)    //  16:    8 <- [16/+1],        1 ,        8  // maxParent:  42
+        .step(   1,  true,   -1, false)    //  17:    0 <- [ 2/+1], swap(  0),        1  // maxParent:  28
+        .step(  -1, false,   17, false)    //  18:    9 <- [ 3/+1],        1 ,        0  // maxParent:  99
+        .step(  -1, false,   18, false)    //  19:   10 <- [ 4/+1],        1 ,        9  // maxParent:  20
+        .step(  -1, false,   19,  true)    //  20:   10 <- [ 5/+1],        1 ,       10  // maxParent:  21
+        .step(  -1, false,   20,  true)    //  21:   10 <- [ 6/+1],        1 ,       10  // maxParent:  131
+        .step(  -1, false,   21, false)    //  22:   11 <- [ 7/+1],        1 ,       10  // maxParent:  23
+        .step(  22,  true,   -1, false)    //  23:   11 <- [ 8/+1],       11 ,        1  // maxParent:  24
+        .step(  -1, false,   23,  true)    //  24:   11 <- [ 9/+1],        1 ,       11  // maxParent:  25
+        .step(  -1, false,   24,  true)    //  25:   11 <- [10/+1],        1 ,       11  // maxParent:  243
+        .step(  25, false,   -1, false)    //  26:   12 <- [11/+1],       11 ,        1  // maxParent:  27
+        .step(  -1, false,   26,  true)    //  27:   12 <- [12/+1],        1 ,       12  // maxParent:  38
+        .step(  17,  true,   -1, false)    //  28:    0 <- [ 3/+1], flop(  0),        1  // maxParent:  85
+        .step(  28, false,   -1, false)    //  29:   13 <- [ 4/+1],        0 ,        1  // maxParent:  121
+        .step(  -1, false,   29, false)    //  30:   14 <- [ 5/+1],        1 ,       13  // maxParent:  44
+        .step(  -1, false,   30, false)    //  31:   15 <- [ 6/+1],        1 ,       14  // maxParent:  32
+        .step(  31,  true,   -1, false)    //  32:   15 <- [ 7/+1],       15 ,        1  // maxParent:  225
+        .step(  -1, false,   32, false)    //  33:   16 <- [ 8/+1],        1 ,       15  // maxParent:  84
+        .step(  -1, false,   33, false)    //  34:   17 <- [ 9/+1],        1 ,       16  // maxParent:  35
+        .step(  34,  true,   -1, false)    //  35:   17 <- [10/+1],       17 ,        1  // maxParent:  36
+        .step(  -1, false,   35,  true)    //  36:   17 <- [11/+1],        1 ,       17  // maxParent:  37
+        .step(  36,  true,   -1, false)    //  37:   17 <- [12/+1],       17 ,        1  // maxParent:  38
+        .step(  27,  true,   37,  true)    //  38:   17 <- [13/+1],       12 ,       17  // maxParent:  39
+        .step(  -1, false,   38,  true)    //  39:   17 <- [14/+1],        1 ,       17  // maxParent:  40
+        .step(  -1, false,   39,  true)    //  40:   17 <- [15/+1],        1 ,       17  // maxParent:  41
+        .step(  40,  true,   -1, false)    //  41:   17 <- [16/+1],       17 ,        1  // maxParent:  42
+        .step(  16,  true,   41,  true)    //  42:   17 <- [17/+1],        8 ,       17  // maxParent:  43
+        .step(  -1, false,   42,  true)    //  43:   17 <- [18/+1],        1 ,       17  // maxParent:  158
+        .step(  30,  true,   -1, false)    //  44:   14 <- [ 6/+1], flop( 14),        1  // maxParent:  45
+        .step(  -1, false,   44,  true)    //  45:   14 <- [ 7/+1],        1 ,       14  // maxParent:  107
+        .step(  45, false,   -1, false)    //  46:    8 <- [ 8/+1],       14 ,        1  // maxParent:  47
+        .step(  -1, false,   46,  true)    //  47:    8 <- [ 9/+1],        1 ,        8  // maxParent:  230
+        .step(  47, false,   -1, false)    //  48:   12 <- [10/+1],        8 ,        1  // maxParent:  49
+        .step(  -1, false,   48,  true)    //  49:   12 <- [11/+1],        1 ,       12  // maxParent:  50
+        .step(  49,  true,   -1, false)    //  50:   12 <- [12/+1],       12 ,        1  // maxParent:  51
+        .step(  -1, false,   50,  true)    //  51:   12 <- [13/+1],        1 ,       12  // maxParent:  52
+        .step(  -1, false,   51,  true)    //  52:   12 <- [14/+1],        1 ,       12  // maxParent:  53
+        .step(  -1, false,   52,  true)    //  53:   12 <- [15/+1],        1 ,       12  // maxParent:  54
+        .step(  -1, false,   53,  true)    //  54:   12 <- [16/+1],        1 ,       12  // maxParent:  98
+        .step(  -1, false,    9,  true)    //  55:    7 <- [10/+1],        1 , swap(  7) // maxParent:  56
+        .step(  -1, false,   55,  true)    //  56:    7 <- [11/+1],        1 ,        7  // maxParent:  57
+        .step(  56,  true,   -1, false)    //  57:    7 <- [12/+1],        7 ,        1  // maxParent:  68
+        .step(  -1, false,    2,  true)    //  58:    2 <- [ 3/+1],        1 , flop(  2) // maxParent:  59
+        .step(  58,  true,   -1, false)    //  59:    2 <- [ 4/+1],        2 ,        1  // maxParent:  60
+        .step(  59,  true,   -1, false)    //  60:    2 <- [ 5/+1],        2 ,        1  // maxParent:  61
+        .step(  -1, false,   60,  true)    //  61:    2 <- [ 6/+1],        1 ,        2  // maxParent:  62
+        .step(  -1, false,   61,  true)    //  62:    2 <- [ 7/+1],        1 ,        2  // maxParent:  199
+        .step(  62, false,   -1, false)    //  63:   18 <- [ 8/+1],        2 ,        1  // maxParent:  64
+        .step(  63,  true,   -1, false)    //  64:   18 <- [ 9/+1],       18 ,        1  // maxParent:  65
+        .step(  64,  true,   -1, false)    //  65:   18 <- [10/+1],       18 ,        1  // maxParent:  66
+        .step(  -1, false,   65,  true)    //  66:   18 <- [11/+1],        1 ,       18  // maxParent:  67
+        .step(  -1, false,   66,  true)    //  67:   18 <- [12/+1],        1 ,       18  // maxParent:  68
+        .step(  57,  true,   67,  true)    //  68:   18 <- [13/+1],        7 ,       18  // maxParent:  69
+        .step(  -1, false,   68,  true)    //  69:   18 <- [14/+1],        1 ,       18  // maxParent:  70
+        .step(  -1, false,   69,  true)    //  70:   18 <- [15/+1],        1 ,       18  // maxParent:  97
+        .step(  -1, false,    4,  true)    //  71:    4 <- [ 5/+1],        1 , swap(  4) // maxParent:  72
+        .step(  71,  true,   -1, false)    //  72:    4 <- [ 6/+1],        4 ,        1  // maxParent:  73
+        .step(  -1, false,   72,  true)    //  73:    4 <- [ 7/+1],        1 ,        4  // maxParent:  74
+        .step(  -1, false,   73,  true)    //  74:    4 <- [ 8/+1],        1 ,        4  // maxParent:  179
+        .step(  -1, false,   74, false)    //  75:    7 <- [ 9/+1],        1 ,        4  // maxParent:  149
+        .step(  -1, false,    3,  true)    //  76:    3 <- [ 4/+1],        1 , swap(  3) // maxParent:  137
+        .step(  76, false,   -1, false)    //  77:   19 <- [ 5/+1],        3 ,        1  // maxParent:  78
+        .step(  77,  true,   -1, false)    //  78:   19 <- [ 6/+1],       19 ,        1  // maxParent:  79
+        .step(  -1, false,   78,  true)    //  79:   19 <- [ 7/+1],        1 ,       19  // maxParent:  80
+        .step(  -1, false,   79,  true)    //  80:   19 <- [ 8/+1],        1 ,       19  // maxParent:  213
+        .step(  80, false,   -1, false)    //  81:   20 <- [ 9/+1],       19 ,        1  // maxParent:  240
+        .step(  75, false,   81, false)    //  82:   21 <- [10/+1],        7 ,       20  // maxParent:  83
+        .step(  82,  true,   -1, false)    //  83:   21 <- [11/+1],       21 ,        1  // maxParent:  93
+        .step(  -1, false,   33,  true)    //  84:   16 <- [ 9/+1],        1 , swap( 16) // maxParent:  91
+        .step(  -1, false,   28,  true)    //  85:    0 <- [ 4/+1],        1 , swap(  0) // maxParent:  86
+        .step(  85,  true,   -1, false)    //  86:    0 <- [ 5/+1],        0 ,        1  // maxParent:  87
+        .step(  86,  true,   -1, false)    //  87:    0 <- [ 6/+1],        0 ,        1  // maxParent:  88
+        .step(  87,  true,   -1, false)    //  88:    0 <- [ 7/+1],        0 ,        1  // maxParent:  204
+        .step(  88, false,   -1, false)    //  89:   22 <- [ 8/+1],        0 ,        1  // maxParent:  90
+        .step(  89,  true,   -1, false)    //  90:   22 <- [ 9/+1],       22 ,        1  // maxParent:  91
+        .step(  84,  true,   90,  true)    //  91:   22 <- [10/+1],       16 ,       22  // maxParent:  92
+        .step(  -1, false,   91,  true)    //  92:   22 <- [11/+1],        1 ,       22  // maxParent:  93
+        .step(  83,  true,   92,  true)    //  93:   22 <- [12/+1],       21 ,       22  // maxParent:  94
+        .step(  -1, false,   93,  true)    //  94:   22 <- [13/+1],        1 ,       22  // maxParent:  95
+        .step(  -1, false,   94,  true)    //  95:   22 <- [14/+1],        1 ,       22  // maxParent:  96
+        .step(  95,  true,   -1, false)    //  96:   22 <- [15/+1],       22 ,        1  // maxParent:  97
+        .step(  70,  true,   96,  true)    //  97:   22 <- [16/+1],       18 ,       22  // maxParent:  98
+        .step(  54,  true,   97,  true)    //  98:   22 <- [17/+1],       12 ,       22  // maxParent:  157
+        .step(  18,  true,   -1, false)    //  99:    9 <- [ 4/+1], flop(  9),        1  // maxParent:  100
+        .step(  99,  true,   -1, false)    // 100:    9 <- [ 5/+1],        9 ,        1  // maxParent:  101
+        .step( 100,  true,   -1, false)    // 101:    9 <- [ 6/+1],        9 ,        1  // maxParent:  102
+        .step(  -1, false,  101,  true)    // 102:    9 <- [ 7/+1],        1 ,        9  // maxParent:  270
+        .step( 102, false,   -1, false)    // 103:   12 <- [ 8/+1],        9 ,        1  // maxParent:  104
+        .step(  -1, false,  103,  true)    // 104:   12 <- [ 9/+1],        1 ,       12  // maxParent:  105
+        .step( 104,  true,   -1, false)    // 105:   12 <- [10/+1],       12 ,        1  // maxParent:  106
+        .step(  -1, false,  105,  true)    // 106:   12 <- [11/+1],        1 ,       12  // maxParent:  111
+        .step(  -1, false,   45,  true)    // 107:   14 <- [ 8/+1],        1 , swap( 14) // maxParent:  108
+        .step( 107,  true,   -1, false)    // 108:   14 <- [ 9/+1],       14 ,        1  // maxParent:  174
+        .step(  -1, false,  108, false)    // 109:   18 <- [10/+1],        1 ,       14  // maxParent:  110
+        .step( 109,  true,   -1, false)    // 110:   18 <- [11/+1],       18 ,        1  // maxParent:  111
+        .step( 106,  true,  110,  true)    // 111:   18 <- [12/+1],       12 ,       18  // maxParent:  112
+        .step(  -1, false,  111,  true)    // 112:   18 <- [13/+1],        1 ,       18  // maxParent:  113
+        .step(  -1, false,  112,  true)    // 113:   18 <- [14/+1],        1 ,       18  // maxParent:  114
+        .step(  -1, false,  113,  true)    // 114:   18 <- [15/+1],        1 ,       18  // maxParent:  148
+        .step(   6,  true,   -1, false)    // 115:    5 <- [ 7/+1], flop(  5),        1  // maxParent:  258
+        .step(  -1, false,  115, false)    // 116:   12 <- [ 8/+1],        1 ,        5  // maxParent:  117
+        .step(  -1, false,  116,  true)    // 117:   12 <- [ 9/+1],        1 ,       12  // maxParent:  118
+        .step(  -1, false,  117,  true)    // 118:   12 <- [10/+1],        1 ,       12  // maxParent:  119
+        .step(  -1, false,  118,  true)    // 119:   12 <- [11/+1],        1 ,       12  // maxParent:  120
+        .step( 119,  true,   -1, false)    // 120:   12 <- [12/+1],       12 ,        1  // maxParent:  129
+        .step(  -1, false,   29,  true)    // 121:   13 <- [ 5/+1],        1 , flop( 13) // maxParent:  159
+        .step(  -1, false,  121, false)    // 122:   21 <- [ 6/+1],        1 ,       13  // maxParent:  123
+        .step(  -1, false,  122,  true)    // 123:   21 <- [ 7/+1],        1 ,       21  // maxParent:  124
+        .step(  -1, false,  123,  true)    // 124:   21 <- [ 8/+1],        1 ,       21  // maxParent:  125
+        .step( 124,  true,   -1, false)    // 125:   21 <- [ 9/+1],       21 ,        1  // maxParent:  224
+        .step( 125, false,   -1, false)    // 126:   16 <- [10/+1],       21 ,        1  // maxParent:  127
+        .step( 126,  true,   -1, false)    // 127:   16 <- [11/+1],       16 ,        1  // maxParent:  128
+        .step(  -1, false,  127,  true)    // 128:   16 <- [12/+1],        1 ,       16  // maxParent:  129
+        .step( 120,  true,  128,  true)    // 129:   16 <- [13/+1],       12 ,       16  // maxParent:  130
+        .step(  -1, false,  129,  true)    // 130:   16 <- [14/+1],        1 ,       16  // maxParent:  147
+        .step(  -1, false,   21,  true)    // 131:   10 <- [ 7/+1],        1 , flop( 10) // maxParent:  217
+        .step( 131, false,   -1, false)    // 132:   12 <- [ 8/+1],       10 ,        1  // maxParent:  133
+        .step(  -1, false,  132,  true)    // 133:   12 <- [ 9/+1],        1 ,       12  // maxParent:  134
+        .step(  -1, false,  133,  true)    // 134:   12 <- [10/+1],        1 ,       12  // maxParent:  135
+        .step( 134,  true,   -1, false)    // 135:   12 <- [11/+1],       12 ,        1  // maxParent:  136
+        .step(  -1, false,  135,  true)    // 136:   12 <- [12/+1],        1 ,       12  // maxParent:  145
+        .step(  -1, false,   76,  true)    // 137:    3 <- [ 5/+1],        1 , flop(  3) // maxParent:  138
+        .step(  -1, false,  137,  true)    // 138:    3 <- [ 6/+1],        1 ,        3  // maxParent:  139
+        .step( 138,  true,   -1, false)    // 139:    3 <- [ 7/+1],        3 ,        1  // maxParent:  169
+        .step(  -1, false,  139, false)    // 140:   23 <- [ 8/+1],        1 ,        3  // maxParent:  141
+        .step( 140,  true,   -1, false)    // 141:   23 <- [ 9/+1],       23 ,        1  // maxParent:  142
+        .step(  -1, false,  141,  true)    // 142:   23 <- [10/+1],        1 ,       23  // maxParent:  143
+        .step(  -1, false,  142,  true)    // 143:   23 <- [11/+1],        1 ,       23  // maxParent:  144
+        .step( 143,  true,   -1, false)    // 144:   23 <- [12/+1],       23 ,        1  // maxParent:  145
+        .step( 136,  true,  144,  true)    // 145:   23 <- [13/+1],       12 ,       23  // maxParent:  146
+        .step( 145,  true,   -1, false)    // 146:   23 <- [14/+1],       23 ,        1  // maxParent:  147
+        .step( 130,  true,  146,  true)    // 147:   23 <- [15/+1],       16 ,       23  // maxParent:  148
+        .step( 114,  true,  147,  true)    // 148:   23 <- [16/+1],       18 ,       23  // maxParent:  156
+        .step(  75,  true,   -1, false)    // 149:    7 <- [10/+1], swap(  7),        1  // maxParent:  150
+        .step(  -1, false,  149,  true)    // 150:    7 <- [11/+1],        1 ,        7  // maxParent:  151
+        .step( 150,  true,   -1, false)    // 151:    7 <- [12/+1],        7 ,        1  // maxParent:  152
+        .step(  -1, false,  151,  true)    // 152:    7 <- [13/+1],        1 ,        7  // maxParent:  153
+        .step(  -1, false,  152,  true)    // 153:    7 <- [14/+1],        1 ,        7  // maxParent:  154
+        .step( 153,  true,   -1, false)    // 154:    7 <- [15/+1],        7 ,        1  // maxParent:  155
+        .step( 154,  true,   -1, false)    // 155:    7 <- [16/+1],        7 ,        1  // maxParent:  156
+        .step( 148,  true,  155,  true)    // 156:    7 <- [17/+1],       23 ,        7  // maxParent:  157
+        .step(  98,  true,  156,  true)    // 157:    7 <- [18/+1],       22 ,        7  // maxParent:  158
+        .step(  43,  true,  157,  true)    // 158:    7 <- [19/+1],       17 ,        7  // maxParent:  294
+        .step( 121,  true,   -1, false)    // 159:   13 <- [ 6/+1], flop( 13),        1  // maxParent:  160
+        .step( 159,  true,   -1, false)    // 160:   13 <- [ 7/+1],       13 ,        1  // maxParent:  188
+        .step(  -1, false,  160, false)    // 161:   17 <- [ 8/+1],        1 ,       13  // maxParent:  254
+        .step(  -1, false,  161, false)    // 162:   22 <- [ 9/+1],        1 ,       17  // maxParent:  163
+        .step(  -1, false,  162,  true)    // 163:   22 <- [10/+1],        1 ,       22  // maxParent:  164
+        .step(  -1, false,  163,  true)    // 164:   22 <- [11/+1],        1 ,       22  // maxParent:  165
+        .step( 164,  true,   -1, false)    // 165:   22 <- [12/+1],       22 ,        1  // maxParent:  166
+        .step( 165,  true,   -1, false)    // 166:   22 <- [13/+1],       22 ,        1  // maxParent:  167
+        .step(  -1, false,  166,  true)    // 167:   22 <- [14/+1],        1 ,       22  // maxParent:  168
+        .step(  -1, false,  167,  true)    // 168:   22 <- [15/+1],        1 ,       22  // maxParent:  186
+        .step(  -1, false,  139,  true)    // 169:    3 <- [ 8/+1],        1 , swap(  3) // maxParent:  170
+        .step( 169,  true,   -1, false)    // 170:    3 <- [ 9/+1],        3 ,        1  // maxParent:  171
+        .step(  -1, false,  170,  true)    // 171:    3 <- [10/+1],        1 ,        3  // maxParent:  172
+        .step( 171,  true,   -1, false)    // 172:    3 <- [11/+1],        3 ,        1  // maxParent:  173
+        .step(  -1, false,  172,  true)    // 173:    3 <- [12/+1],        1 ,        3  // maxParent:  177
+        .step( 108,  true,   -1, false)    // 174:   14 <- [10/+1], swap( 14),        1  // maxParent:  175
+        .step(  -1, false,  174,  true)    // 175:   14 <- [11/+1],        1 ,       14  // maxParent:  176
+        .step( 175,  true,   -1, false)    // 176:   14 <- [12/+1],       14 ,        1  // maxParent:  177
+        .step( 173,  true,  176,  true)    // 177:   14 <- [13/+1],        3 ,       14  // maxParent:  178
+        .step(  -1, false,  177,  true)    // 178:   14 <- [14/+1],        1 ,       14  // maxParent:  185
+        .step(  -1, false,   74,  true)    // 179:    4 <- [ 9/+1],        1 , swap(  4) // maxParent:  231
+        .step( 179, false,   -1, false)    // 180:    3 <- [10/+1],        4 ,        1  // maxParent:  181
+        .step( 180,  true,   -1, false)    // 181:    3 <- [11/+1],        3 ,        1  // maxParent:  182
+        .step(  -1, false,  181,  true)    // 182:    3 <- [12/+1],        1 ,        3  // maxParent:  183
+        .step(  -1, false,  182,  true)    // 183:    3 <- [13/+1],        1 ,        3  // maxParent:  184
+        .step( 183,  true,   -1, false)    // 184:    3 <- [14/+1],        3 ,        1  // maxParent:  185
+        .step( 178,  true,  184,  true)    // 185:    3 <- [15/+1],       14 ,        3  // maxParent:  186
+        .step( 168,  true,  185,  true)    // 186:    3 <- [16/+1],       22 ,        3  // maxParent:  187
+        .step(  -1, false,  186,  true)    // 187:    3 <- [17/+1],        1 ,        3  // maxParent:  239
+        .step(  -1, false,  160,  true)    // 188:   13 <- [ 8/+1],        1 , swap( 13) // maxParent:  283
+        .step(  -1, false,  188, false)    // 189:   22 <- [ 9/+1],        1 ,       13  // maxParent:  190
+        .step(  -1, false,  189,  true)    // 190:   22 <- [10/+1],        1 ,       22  // maxParent:  191
+        .step( 190,  true,   -1, false)    // 191:   22 <- [11/+1],       22 ,        1  // maxParent:  192
+        .step( 191,  true,   -1, false)    // 192:   22 <- [12/+1],       22 ,        1  // maxParent:  197
+        .step(   8,  true,   -1, false)    // 193:    6 <- [ 9/+1], swap(  6),        1  // maxParent:  249
+        .step(  -1, false,  193, false)    // 194:   14 <- [10/+1],        1 ,        6  // maxParent:  195
+        .step(  -1, false,  194,  true)    // 195:   14 <- [11/+1],        1 ,       14  // maxParent:  196
+        .step(  -1, false,  195,  true)    // 196:   14 <- [12/+1],        1 ,       14  // maxParent:  197
+        .step( 192,  true,  196,  true)    // 197:   14 <- [13/+1],       22 ,       14  // maxParent:  198
+        .step(  -1, false,  197,  true)    // 198:   14 <- [14/+1],        1 ,       14  // maxParent:  211
+        .step(  62,  true,   -1, false)    // 199:    2 <- [ 8/+1], swap(  2),        1  // maxParent:  200
+        .step(  -1, false,  199,  true)    // 200:    2 <- [ 9/+1],        1 ,        2  // maxParent:  201
+        .step(  -1, false,  200,  true)    // 201:    2 <- [10/+1],        1 ,        2  // maxParent:  202
+        .step(  -1, false,  201,  true)    // 202:    2 <- [11/+1],        1 ,        2  // maxParent:  203
+        .step(  -1, false,  202,  true)    // 203:    2 <- [12/+1],        1 ,        2  // maxParent:  209
+        .step(  -1, false,   88,  true)    // 204:    0 <- [ 8/+1],        1 , swap(  0) // maxParent:  205
+        .step( 204,  true,   -1, false)    // 205:    0 <- [ 9/+1],        0 ,        1  // maxParent:  206
+        .step( 205,  true,   -1, false)    // 206:    0 <- [10/+1],        0 ,        1  // maxParent:  207
+        .step( 206,  true,   -1, false)    // 207:    0 <- [11/+1],        0 ,        1  // maxParent:  208
+        .step(  -1, false,  207,  true)    // 208:    0 <- [12/+1],        1 ,        0  // maxParent:  209
+        .step( 203,  true,  208,  true)    // 209:    0 <- [13/+1],        2 ,        0  // maxParent:  210
+        .step( 209,  true,   -1, false)    // 210:    0 <- [14/+1],        0 ,        1  // maxParent:  211
+        .step( 198,  true,  210,  true)    // 211:    0 <- [15/+1],       14 ,        0  // maxParent:  212
+        .step(  -1, false,  211,  true)    // 212:    0 <- [16/+1],        1 ,        0  // maxParent:  238
+        .step(  -1, false,   80,  true)    // 213:   19 <- [ 9/+1],        1 , swap( 19) // maxParent:  214
+        .step( 213,  true,   -1, false)    // 214:   19 <- [10/+1],       19 ,        1  // maxParent:  215
+        .step(  -1, false,  214,  true)    // 215:   19 <- [11/+1],        1 ,       19  // maxParent:  216
+        .step(  -1, false,  215,  true)    // 216:   19 <- [12/+1],        1 ,       19  // maxParent:  280
+        .step(  -1, false,  131,  true)    // 217:   10 <- [ 8/+1],        1 , swap( 10) // maxParent:  218
+        .step( 217,  true,   -1, false)    // 218:   10 <- [ 9/+1],       10 ,        1  // maxParent:  219
+        .step(  -1, false,  218,  true)    // 219:   10 <- [10/+1],        1 ,       10  // maxParent:  220
+        .step( 219,  true,   -1, false)    // 220:   10 <- [11/+1],       10 ,        1  // maxParent:  221
+        .step(  -1, false,  220,  true)    // 221:   10 <- [12/+1],        1 ,       10  // maxParent:  222
+        .step( 216, false,  221,  true)    // 222:   10 <- [13/+1],       19 ,       10  // maxParent:  223
+        .step(  -1, false,  222,  true)    // 223:   10 <- [14/+1],        1 ,       10  // maxParent:  236
+        .step(  -1, false,  125,  true)    // 224:   21 <- [10/+1],        1 , swap( 21) // maxParent:  228
+        .step(  -1, false,   32,  true)    // 225:   15 <- [ 8/+1],        1 , swap( 15) // maxParent:  266
+        .step(  -1, false,  225, false)    // 226:   14 <- [ 9/+1],        1 ,       15  // maxParent:  227
+        .step( 226,  true,   -1, false)    // 227:   14 <- [10/+1],       14 ,        1  // maxParent:  228
+        .step( 224,  true,  227,  true)    // 228:   14 <- [11/+1],       21 ,       14  // maxParent:  229
+        .step( 228,  true,   -1, false)    // 229:   14 <- [12/+1],       14 ,        1  // maxParent:  234
+        .step(  -1, false,   47,  true)    // 230:    8 <- [10/+1],        1 , swap(  8) // maxParent:  232
+        .step( 179,  true,   -1, false)    // 231:    4 <- [10/+1], swap(  4),        1  // maxParent:  232
+        .step( 230,  true,  231,  true)    // 232:    4 <- [11/+1],        8 ,        4  // maxParent:  233
+        .step(  -1, false,  232,  true)    // 233:    4 <- [12/+1],        1 ,        4  // maxParent:  234
+        .step( 229,  true,  233,  true)    // 234:    4 <- [13/+1],       14 ,        4  // maxParent:  235
+        .step( 234,  true,   -1, false)    // 235:    4 <- [14/+1],        4 ,        1  // maxParent:  236
+        .step( 223,  true,  235,  true)    // 236:    4 <- [15/+1],       10 ,        4  // maxParent:  237
+        .step( 236,  true,   -1, false)    // 237:    4 <- [16/+1],        4 ,        1  // maxParent:  238
+        .step( 212,  true,  237,  true)    // 238:    4 <- [17/+1],        0 ,        4  // maxParent:  239
+        .step( 187,  true,  238,  true)    // 239:    4 <- [18/+1],        3 ,        4  // maxParent:  293
+        .step(  -1, false,   81,  true)    // 240:   20 <- [10/+1],        1 ,       20  // maxParent:  241
+        .step( 240,  true,   -1, false)    // 241:   20 <- [11/+1],       20 ,        1  // maxParent:  242
+        .step(  -1, false,  241,  true)    // 242:   20 <- [12/+1],        1 ,       20  // maxParent:  245
+        .step(  -1, false,   25,  true)    // 243:   11 <- [11/+1],        1 , swap( 11) // maxParent:  244
+        .step( 243,  true,   -1, false)    // 244:   11 <- [12/+1],       11 ,        1  // maxParent:  245
+        .step( 242,  true,  244,  true)    // 245:   11 <- [13/+1],       20 ,       11  // maxParent:  246
+        .step( 245,  true,   -1, false)    // 246:   11 <- [14/+1],       11 ,        1  // maxParent:  247
+        .step(  -1, false,  246,  true)    // 247:   11 <- [15/+1],        1 ,       11  // maxParent:  248
+        .step(  -1, false,  247,  true)    // 248:   11 <- [16/+1],        1 ,       11  // maxParent:  279
+        .step(  -1, false,  193,  true)    // 249:    6 <- [10/+1],        1 , swap(  6) // maxParent:  250
+        .step(  -1, false,  249,  true)    // 250:    6 <- [11/+1],        1 ,        6  // maxParent:  251
+        .step(  -1, false,  250,  true)    // 251:    6 <- [12/+1],        1 ,        6  // maxParent:  252
+        .step( 251,  true,   -1, false)    // 252:    6 <- [13/+1],        6 ,        1  // maxParent:  253
+        .step(  -1, false,  252,  true)    // 253:    6 <- [14/+1],        1 ,        6  // maxParent:  265
+        .step(  -1, false,  161,  true)    // 254:   17 <- [ 9/+1],        1 , swap( 17) // maxParent:  255
+        .step(  -1, false,  254,  true)    // 255:   17 <- [10/+1],        1 ,       17  // maxParent:  256
+        .step(  -1, false,  255,  true)    // 256:   17 <- [11/+1],        1 ,       17  // maxParent:  257
+        .step(  -1, false,  256,  true)    // 257:   17 <- [12/+1],        1 ,       17  // maxParent:  263
+        .step(  -1, false,  115,  true)    // 258:    5 <- [ 8/+1],        1 , swap(  5) // maxParent:  259
+        .step(  -1, false,  258,  true)    // 259:    5 <- [ 9/+1],        1 ,        5  // maxParent:  260
+        .step( 259,  true,   -1, false)    // 260:    5 <- [10/+1],        5 ,        1  // maxParent:  261
+        .step( 260,  true,   -1, false)    // 261:    5 <- [11/+1],        5 ,        1  // maxParent:  262
+        .step( 261,  true,   -1, false)    // 262:    5 <- [12/+1],        5 ,        1  // maxParent:  263
+        .step( 257,  true,  262,  true)    // 263:    5 <- [13/+1],       17 ,        5  // maxParent:  264
+        .step( 263,  true,   -1, false)    // 264:    5 <- [14/+1],        5 ,        1  // maxParent:  265
+        .step( 253,  true,  264,  true)    // 265:    5 <- [15/+1],        6 ,        5  // maxParent:  278
+        .step(  -1, false,  225,  true)    // 266:   15 <- [ 9/+1],        1 , swap( 15) // maxParent:  267
+        .step( 266,  true,   -1, false)    // 267:   15 <- [10/+1],       15 ,        1  // maxParent:  268
+        .step(  -1, false,  267,  true)    // 268:   15 <- [11/+1],        1 ,       15  // maxParent:  269
+        .step(  -1, false,  268,  true)    // 269:   15 <- [12/+1],        1 ,       15  // maxParent:  275
+        .step(  -1, false,  102,  true)    // 270:    9 <- [ 8/+1],        1 , swap(  9) // maxParent:  271
+        .step( 270,  true,   -1, false)    // 271:    9 <- [ 9/+1],        9 ,        1  // maxParent:  272
+        .step(  -1, false,  271,  true)    // 272:    9 <- [10/+1],        1 ,        9  // maxParent:  273
+        .step(  -1, false,  272,  true)    // 273:    9 <- [11/+1],        1 ,        9  // maxParent:  274
+        .step( 273,  true,   -1, false)    // 274:    9 <- [12/+1],        9 ,        1  // maxParent:  275
+        .step( 269,  true,  274,  true)    // 275:    9 <- [13/+1],       15 ,        9  // maxParent:  276
+        .step( 275,  true,   -1, false)    // 276:    9 <- [14/+1],        9 ,        1  // maxParent:  277
+        .step( 276,  true,   -1, false)    // 277:    9 <- [15/+1],        9 ,        1  // maxParent:  278
+        .step( 265,  true,  277,  true)    // 278:    9 <- [16/+1],        5 ,        9  // maxParent:  279
+        .step( 248,  true,  278,  true)    // 279:    9 <- [17/+1],       11 ,        9  // maxParent:  292
+        .step(  -1, false,  216,  true)    // 280:   19 <- [13/+1],        1 , swap( 19) // maxParent:  281
+        .step( 280,  true,   -1, false)    // 281:   19 <- [14/+1],       19 ,        1  // maxParent:  282
+        .step(  -1, false,  281,  true)    // 282:   19 <- [15/+1],        1 ,       19  // maxParent:  290
+        .step(  -1, false,  188,  true)    // 283:   13 <- [ 9/+1],        1 , swap( 13) // maxParent:  284
+        .step(  -1, false,  283,  true)    // 284:   13 <- [10/+1],        1 ,       13  // maxParent:  285
+        .step( 284,  true,   -1, false)    // 285:   13 <- [11/+1],       13 ,        1  // maxParent:  286
+        .step(  -1, false,  285,  true)    // 286:   13 <- [12/+1],        1 ,       13  // maxParent:  287
+        .step( 286,  true,   -1, false)    // 287:   13 <- [13/+1],       13 ,        1  // maxParent:  288
+        .step( 287,  true,   -1, false)    // 288:   13 <- [14/+1],       13 ,        1  // maxParent:  289
+        .step( 288,  true,   -1, false)    // 289:   13 <- [15/+1],       13 ,        1  // maxParent:  290
+        .step( 282,  true,  289,  true)    // 290:   13 <- [16/+1],       19 ,       13  // maxParent:  291
+        .step( 290,  true,   -1,  true)    // 291:    1 <- [17/+1],       13 ,        1  // maxParent:  292
+        .step( 279,  true,  291,  true)    // 292:    1 <- [18/+1],        9 ,        1  // maxParent:  293
+        .step( 239,  true,  292,  true)    // 293:    1 <- [19/+1],        4 ,        1  // maxParent:  294
+        .step( 158,  true,  293,  true)    // 294:    1 <- [20/+1],        7 ,        1  // maxParent:  Infinity
     .inspect(summary);
 
     test.init([0,1], { maxLenLimit: 3, title: "4-bit-addition (GOOD variable ordering, height 12, size 32): bitstr(4, 'x').plus(bitstr(4, 'y')).eq(bitstr(4, 'z'))" })
