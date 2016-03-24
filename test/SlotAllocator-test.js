@@ -132,10 +132,10 @@ const init = require('../lib/SlotAllocator').init;
         let usedArr = [...usedS], // we'll test .get(...) with up to 3 args
             used1   = usedArr.length > 0 ? usedArr[0] : undefined,
             used2   = usedArr.length > 1 ? usedArr[1] : undefined,
-            usableArr = [...usableS];
-        usableArr.length = Math.min(usableArr.length, 5); // limit nr of testcases
+            usableArr = [-1, alloc.maxLen, ...usableS]; // -1 and alloc.maxLen are never valid src slots
+        //usableArr.length = Math.min(usableArr.length, 5); // limit nr of testcases
         usableArr.forEach(s => {
-            let msg = "usable slot " + s + " should NOT be valid as arg; usable: " + util.inspect(usableS) + ", used: " + util.inspect(usedS),
+            let msg = "slot " + s + " should NOT be valid as arg; usable: " + util.inspect(usableS) + ", used: " + util.inspect(usedS),
                 args;
             //console.log("src validity check: " + msg);
             [true, false].forEach(reuse0 => {
@@ -184,7 +184,9 @@ const init = require('../lib/SlotAllocator').init;
                 assert(usedS.has(a1), msg + "invalid test arg 1, " + a1 + " should be in usedS=" + util.inspect(usedS));
 
                 // ensure that everything in usableS - ie. everything that's NOT currently used - is seen as invalid by alloc:
-                testSrcValidityCheck(alloc, usedS, usableS);
+                if (i < 50) { // limit test effort
+                    testSrcValidityCheck(alloc, usedS, usableS);
+                }
 
                 // move reusable args from used to usable:
                 if (reuse0) { usedS.delete(a0); usableS.add(a0); }
